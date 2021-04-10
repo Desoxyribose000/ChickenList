@@ -1,0 +1,37 @@
+Postgres Database
+
+Database Setup:
+
+CREATE SCHEMA chickenlist;
+SET SCHEMA 'chickenlist';
+
+CREATE TABLE besitzer(
+    BID         SERIAL PRIMARY KEY      NOT NULL,
+    vorname     char(50),
+    nachname    char(50)                NOT NULL,
+    plz         char(10)                NOT NULL,
+    ortsname    char(70)                NOT NULL,
+    strassenname char(70)               NOT NULL,
+    hausnummer  char(20)                NOT NULL,
+    tel         char(20)
+);
+drop TABLE besitzer_impftermin;
+drop TABLE impftermin;
+
+CREATE TABLE impftermin(
+    IID     SERIAL     PRIMARY KEY     NOT NULL,
+    datum   date                    NOT NULL,
+    anzahlhuehner   INT             NOT NULL,
+    bezahlt boolean
+);
+
+CREATE TABLE besitzer_impftermin(
+    BID SERIAL ,
+    IID SERIAL ,
+    FOREIGN KEY (BID) REFERENCES besitzer(BID),
+    FOREIGN KEY (IID) REFERENCES impftermin(IID),
+    PRIMARY KEY (BID,IID)
+);
+
+Project Setup:
+in line 20 add Your #USERNAME#, #HOST#, #PASSWORD# and #DBNAME#
