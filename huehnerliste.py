@@ -17,7 +17,7 @@ from datetime import datetime
 # establish connection with db // creating db
 
 # for use with postgress
-connection = psycopg2.connect("user=#USERNAME# host=#HOST# password=#PASSWORD# dbname=#DBNAME#")
+connection = psycopg2.connect("user=postgres host=localhost password=hC_pGSWYz-b-s762 dbname=postgres")
 
 cur = connection.cursor()
 cur.execute("""SET SCHEMA 'chickenlist';""")
