@@ -5,21 +5,17 @@
 # Programm for Manipulation of ChickenList DB
 # GUI Controller
 
-import psycopg2
-import xlwt
+
 import tkinter as tk
 import tkinter.filedialog as fdialog
 from tksheet import Sheet
 from tkinter import ttk
 from tkinter import messagebox as msg
-import tkcalendar
 from datetime import datetime
 
-from db_access import cur, connection
+from db_access import cur
+from db_access import connection
 import db_access as dba
-
-
-
 
 
 # GUI
@@ -29,16 +25,16 @@ class Page(tk.Frame):
 
 
 # preview entire db and Print to xls file in given directory
-class P_ViewAllPrintAll(Page):
+class PageViewAllPrintAll(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
-        labelBox = tk.Frame(master=self)
-        labelBox.pack(side="top", fill="x", padx="5", pady="5")
-        label = tk.Label(labelBox, text="Vorschau und Drucken", font=55)
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Vorschau und Drucken", font=55)
         label.pack(fill="x", side="left")
 
-        data = dba.getAll()  # get Data from DB
+        data = dba.get_all()  # get Data from DB
 
         self.rahmenoben = tk.Frame(master=self)
         self.rahmenoben.pack(expand=True, fill="both", padx='5', pady='5')
@@ -54,11 +50,11 @@ class P_ViewAllPrintAll(Page):
         self.sheet.column_width(1, width=350)
         self.sheet.column_width(2, width=150)
 
-        self.button = tk.Button(self, text="Als Datei Speichern", command=(lambda: self.selectDir()))
+        self.button = tk.Button(self, text="Als Datei Speichern", command=(lambda: self.select_dir()))
         self.button.pack(side="left", padx="10", pady="10")
 
     def refresh(self):
-        data = dba.getAll()
+        data = dba.get_all()
         self.sheet.data_reference(newdataref=data)
         self.sheet.column_width(0, width=300)
         self.sheet.column_width(1, width=350)
@@ -72,211 +68,200 @@ class P_ViewAllPrintAll(Page):
         root.title("Hühnerliste - Vorschau und Drucken")
 
     @staticmethod
-    def selectDir():
+    def select_dir():
         fname = fdialog.askdirectory()
-        dba.printAll(fname)
+        dba.print_all(fname)
 
 
 # add new Owner
-class P_Owner(Page):
+class PageOwner(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
-        labelBox = tk.Frame(master=self)
-        labelBox.pack(side="top", fill="x", padx="5", pady="5")
-        label = tk.Label(labelBox, text="Einen Neuen Besitzer hinzufügen", font=55)
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Einen Neuen Besitzer hinzufügen", font=55)
         label.pack(fill="x", side="left")
 
-        ownerBox = tk.Frame(master=self, borderwidth=2, relief="groove")
-        ownerBox.pack(side="top", fill="x", padx="5",
-                      pady="5")  # ownerBox = tk.Frame(self, relief="groove").pack(side="top", fill="both", padx="5", pady="5", expand=True)
+        owner_box = tk.Frame(master=self, borderwidth=2, relief="groove")
+        owner_box.pack(side="top", fill="x", padx="5",
+                       pady="5")
 
-        NameBox = tk.Frame(ownerBox)
-        NameBox.pack(side="top", fill="x", pady=5)
+        name_box = tk.Frame(owner_box)
+        name_box.pack(side="top", fill="x", pady=5)
 
-        VNameBox = tk.Frame(NameBox)
-        VNameBox.pack(side="left", fill="x")
-        L_vname = tk.Label(VNameBox, text="Vorname").pack(side="left", padx="5")
-        self.E_vname = tk.Entry(VNameBox)
+        vname_box = tk.Frame(name_box)
+        vname_box.pack(side="left", fill="x")
+        tk.Label(vname_box, text="Vorname").pack(side="left", padx="5")
+        self.E_vname = tk.Entry(vname_box)
         self.E_vname.pack(side="left", padx="5")
 
-        NNameBox = tk.Frame(NameBox)
-        NNameBox.pack(side="left", fill="x")
-        L_nname = tk.Label(NNameBox, text="Nachname *").pack(side="left", padx="5")
-        self.E_nname = tk.Entry(NNameBox)
+        nname_box = tk.Frame(name_box)
+        nname_box.pack(side="left", fill="x")
+        tk.Label(nname_box, text="Nachname *").pack(side="left", padx="5")
+        self.E_nname = tk.Entry(nname_box)
         self.E_nname.pack(side="left", padx="5")
 
-        AdressBox = tk.Frame(ownerBox)
-        AdressBox.pack(side="top", fill="x", pady=5)
+        adress_box = tk.Frame(owner_box)
+        adress_box.pack(side="top", fill="x", pady=5)
 
-        PLZBox = tk.Frame(AdressBox)
-        PLZBox.pack(side="left", fill="x")
-        L_PLZ = tk.Label(PLZBox, text="PLZ *").pack(side="left", padx="5")
-        self.E_PLZ = tk.Entry(PLZBox)
+        plz_box = tk.Frame(adress_box)
+        plz_box.pack(side="left", fill="x")
+        tk.Label(plz_box, text="PLZ *").pack(side="left", padx="5")
+        self.E_PLZ = tk.Entry(plz_box)
         self.E_PLZ.pack(side="left", padx="25")
 
-        OrtBox = tk.Frame(AdressBox)
-        OrtBox.pack(side="left", fill="x")
-        L_Ort = tk.Label(OrtBox, text="Ort *").pack(side="left", padx="5")
-        self.E_Ort = tk.Entry(OrtBox)
+        ort_box = tk.Frame(adress_box)
+        ort_box.pack(side="left", fill="x")
+        tk.Label(ort_box, text="Ort *").pack(side="left", padx="5")
+        self.E_Ort = tk.Entry(ort_box)
         self.E_Ort.pack(side="left", padx="25")
 
-        StrasseBox = tk.Frame(AdressBox)
-        StrasseBox.pack(side="left", fill="x")
-        L_Strasse = tk.Label(StrasseBox, text="Strasse *").pack(side="left", padx="5")
-        self.E_Strasse = tk.Entry(StrasseBox)
+        strasse_box = tk.Frame(adress_box)
+        strasse_box.pack(side="left", fill="x")
+        tk.Label(strasse_box, text="Strasse *").pack(side="left", padx="5")
+        self.E_Strasse = tk.Entry(strasse_box)
         self.E_Strasse.pack(side="left", padx="5")
 
-        HausBox = tk.Frame(AdressBox)
-        HausBox.pack(side="left", fill="x")
-        L_Haus = tk.Label(HausBox, text="Hausnummer *").pack(side="left", padx="5")
-        self.E_Haus = tk.Entry(HausBox)
+        haus_box = tk.Frame(adress_box)
+        haus_box.pack(side="left", fill="x")
+        tk.Label(haus_box, text="Hausnummer *").pack(side="left", padx="5")
+        self.E_Haus = tk.Entry(haus_box)
         self.E_Haus.pack(side="left", padx="5")
 
-        TelBox = tk.Frame(ownerBox)
-        TelBox.pack(side="top", fill="x", pady=5)
+        tel_box = tk.Frame(owner_box)
+        tel_box.pack(side="top", fill="x", pady=5)
 
-        L_Tel = tk.Label(TelBox, text="Telefonnummer").pack(side="left", padx="5")
-        self.E_Tel = tk.Entry(TelBox)
+        tk.Label(tel_box, text="Telefonnummer").pack(side="left", padx="5")
+        self.E_Tel = tk.Entry(tel_box)
         self.E_Tel.pack(side="left", padx="5")
 
-        DisclaimerBox = tk.Frame(master=self)
-        DisclaimerBox.pack(side="top", fill="x", padx="5", pady="5")
-        L_vname = tk.Label(DisclaimerBox, text="* sind Pflichtfelder").pack(side="left", padx="5")
+        disclaimer_box = tk.Frame(master=self)
+        disclaimer_box.pack(side="top", fill="x", padx="5", pady="5")
+        tk.Label(disclaimer_box, text="* sind Pflichtfelder").pack(side="left", padx="5")
 
-        ButtonBox = tk.Frame(master=self)
-        ButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        button_box = tk.Frame(master=self)
+        button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        addDate = tk.IntVar()
-        terminBox = tk.Frame(master=self, borderwidth=2, relief="groove")
+        add_date = tk.IntVar()
+        termin_box = tk.Frame(master=self, borderwidth=2, relief="groove")
 
-        DatumBox = tk.Frame(master=terminBox)
+        datum_box = tk.Frame(master=termin_box)
 
         self.thisDate = tk.IntVar()
         self.thisDate.set(1)
-        L_Datum = tk.Label(DatumBox, text="Datum: ")
-        RB_thisDateTrue = tk.Radiobutton(master=DatumBox, text='heute', value='1', variable=self.thisDate)
-        L_Oder = tk.Label(DatumBox, text="oder")
-        RB_thisDateFalse = tk.Radiobutton(master=DatumBox, text='anderes Datum', value='0', variable=self.thisDate)
+        label_datum = tk.Label(datum_box, text="Datum: ")
+        radiobutton_this_date_true = tk.Radiobutton(master=datum_box, text='heute', value='1', variable=self.thisDate)
+        label_oder = tk.Label(datum_box, text="oder")
+        radiobutton_this_date_false = tk.Radiobutton(master=datum_box, text='anderes Datum', value='0',
+                                                     variable=self.thisDate)
         self.day = tk.IntVar()
         self.day.set(1)
-        Sb_day = ttk.Spinbox(DatumBox, from_=1, to=31, textvariable=self.day, width=5)
+        spinbox_day = ttk.Spinbox(datum_box, from_=1, to=31, textvariable=self.day, width=5)
         self.month = tk.IntVar()
         self.month.set(1)
-        Sb_month = ttk.Spinbox(DatumBox, from_=1, to=12, textvariable=self.month, width=5)
+        spinbox_month = ttk.Spinbox(datum_box, from_=1, to=12, textvariable=self.month, width=5)
         self.year = tk.IntVar()
         self.year.set(2021)
-        Sb_year = ttk.Spinbox(DatumBox, from_=2019, to=2030, textvariable=self.year, width=5)
+        spinbox_year = ttk.Spinbox(datum_box, from_=2019, to=2030, textvariable=self.year, width=5)
 
-        HuehnerBox = tk.Frame(master=terminBox)
-        L_Huehner = tk.Label(HuehnerBox, text="Anzahl der Hühner: ")
-        self.E_Huehner = tk.Entry(HuehnerBox)
+        huehner_box = tk.Frame(master=termin_box)
+        label_huehner = tk.Label(huehner_box, text="Anzahl der Hühner: ")
+        self.E_Huehner = tk.Entry(huehner_box)
 
-        PaidBox = tk.Frame(master=terminBox)
-        L_Paid = tk.Label(PaidBox, text="bezahlt: ")
+        paid_box = tk.Frame(master=termin_box)
+        labl_paid = tk.Label(paid_box, text="bezahlt: ")
         self.paid = tk.IntVar()
-        CB_Paid = tk.Checkbutton(PaidBox, text="", variable=self.paid)
+        checkbutton_paid = tk.Checkbutton(paid_box, text="", variable=self.paid)
 
-        # terminBox.pack(side="top", fill="x", padx="5", pady="5")
-        # DatumBox.pack(side="top", fill="x", pady="5")
-        # L_Datum.pack(side="left", padx="5")
-        # RB_thisDateTrue.pack(side="left", padx="5")
-        # L_Oder.pack(side="left", padx="5")
-        # RB_thisDateFalse.pack(side="left", padx="5")
-        # Sb_day.pack(side="left", padx="5")
-        # Sb_month.pack(side="left", padx="5")
-        # Sb_year.pack(side="left", padx="5")
-        # HuehnerBox.pack(side="top", fill="x", pady="5")
-        # L_Huehner.pack(side="left", padx="5")
-        # E_Huehner.pack(side="left", padx="5")
-        # PaidBox.pack(side="top", fill="x", pady="5")
-        # L_Paid.pack(side="left", padx="5")
-        # CB_Paid.pack(side="left")
-
-        StatusBox = tk.Frame(master=self)
-        StatusBox.pack(side="top", fill="x", padx="5", pady="5")
+        status_box = tk.Frame(master=self)
+        status_box.pack(side="top", fill="x", padx="5", pady="5")
 
         self.StatusText = tk.StringVar()
-        L_State = tk.Label(StatusBox, textvariable=self.StatusText)
-        L_State.pack(side="left", pady="5")
+        label_state = tk.Label(status_box, textvariable=self.StatusText)
+        label_state.pack(side="left", pady="5")
 
         # terminBox, the outer Box needs to be first
-        List = [terminBox, DatumBox, L_Datum, RB_thisDateTrue, L_Oder, RB_thisDateFalse, Sb_day,
-                Sb_month, Sb_year, HuehnerBox, L_Huehner, self.E_Huehner, PaidBox, L_Paid, CB_Paid]
+        box_list = [termin_box, datum_box, label_datum, radiobutton_this_date_true, label_oder,
+                    radiobutton_this_date_false,
+                    spinbox_day,
+                    spinbox_month, spinbox_year, huehner_box, label_huehner, self.E_Huehner, paid_box, labl_paid,
+                    checkbutton_paid]
 
         # used to check if Termin shall be displayed, calls funtion to dynamicly pack and unpack it
-        CB_addDate = tk.Checkbutton(ButtonBox, text="Ein Impfdatum ebenfalls hinzufügen", variable=addDate,
-                                    command=(lambda: self.packTermin(List, addDate.get())))
+        checkbutton_add_date = tk.Checkbutton(button_box, text="Ein Impfdatum ebenfalls hinzufügen", variable=add_date,
+                                              command=(lambda: self.pack_termin(box_list, add_date.get())))
 
-        B_AddButton = tk.Button(ButtonBox, text="Hinzufügen",
-                                command=(lambda: self.testInput(addDate.get())))  # (lambda: addOwner())
+        button_add_button = tk.Button(button_box, text="Hinzufügen",
+                                      command=(lambda: self.test_input(add_date.get())))  # (lambda: addOwner())
 
-        B_AddButton.pack(side="left")
-        CB_addDate.pack(side="left")
+        button_add_button.pack(side="left")
+        checkbutton_add_date.pack(side="left")
 
     # pack or packforget for the List of all Elemnts needed to display Termin
-    def packTermin(self, List, isAddDate):
-        if isAddDate:
-            for i in range(len(List)):
+    @staticmethod
+    def pack_termin(box_list, is_add_date):
+        if is_add_date:
+            for i in range(len(box_list)):
                 if i == 0:
-                    List[i].pack(side="top", fill="x", padx="5", pady="5")
+                    box_list[i].pack(side="top", fill="x", padx="5", pady="5")
                     continue
-                if isinstance(List[i], tk.Frame):
-                    List[i].pack(side="top", fill="x", pady="5")
+                if isinstance(box_list[i], tk.Frame):
+                    box_list[i].pack(side="top", fill="x", pady="5")
                 else:
-                    List[i].pack(side="left", padx="5")
+                    box_list[i].pack(side="left", padx="5")
         else:
-            for item in List:
+            for item in box_list:
                 item.pack_forget()
 
-    def testInput(self, isAddDate):
-        validInput = True
+    def test_input(self, is_add_date):
+        valid_input = True
 
-        if isAddDate == 1:
-            if self.day == None:
-                validInput = False
-            if self.month == None:
-                validInput = False
-            if self.year == None:
-                validInput = False
-            Huehner = self.E_Huehner.get()
-            Huehner.replace(" ", "")
-            if not (Huehner.isnumeric()):
-                validInput = False
+        if is_add_date == 1:
+            if self.day is None:
+                valid_input = False
+            if self.month is None:
+                valid_input = False
+            if self.year is None:
+                valid_input = False
+            huehner = self.E_Huehner.get()
+            huehner.replace(" ", "")
+            if not (huehner.isnumeric()):
+                valid_input = False
 
-        PLZ = self.E_PLZ.get()
-        PLZ = PLZ.replace(" ", "")
-        if not (PLZ.isnumeric()):
-            validInput = False
+        plz = self.E_PLZ.get()
+        plz = plz.replace(" ", "")
+        if not (plz.isnumeric()):
+            valid_input = False
 
         if len(self.E_Tel.get()) > 0:
-            Tel = self.E_Tel.get()
-            Tel = Tel.replace(" ", "")
-            if not (Tel.isnumeric()):
-                validInput = False
+            tel = self.E_Tel.get()
+            tel = tel.replace(" ", "")
+            if not (tel.isnumeric()):
+                valid_input = False
 
-        EntryList = [self.E_nname, self.E_PLZ, self.E_Ort, self.E_Strasse, self.E_Haus]
+        entry_list = [self.E_nname, self.E_PLZ, self.E_Ort, self.E_Strasse, self.E_Haus]
 
-        if isAddDate == 1:
-            EntryList.append(self.E_Huehner)
+        if is_add_date == 1:
+            entry_list.append(self.E_Huehner)
             try:
-                dateString = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
-                Datum = datetime.strptime(dateString, '%Y-%m-%d')
+                date_string = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
+                datetime.strptime(date_string, '%Y-%m-%d')
             except Exception as e:
                 msg.showerror("Fehlerhaftes Datum!", message="Das von Ihnen eingebene Datum enthält Fehler!\n" + str(e))
-                validInput = False
+                valid_input = False
 
-        isEmpty = False
-        for Entry in EntryList:
+        is_empty = False
+        for Entry in entry_list:
             if len(Entry.get()) == 0:
-                isEmpty = True
-        if isEmpty:
+                is_empty = True
+        if is_empty:
             self.StatusText.set("Bitte fülle alle Pflichtfelder und achte auf sinnvolle Eingaben!")
-            validInput = False
+            valid_input = False
 
-        if validInput:
+        if valid_input:
             # Build Dicttionary of Owner values
-            OwnerDict = {
+            owner_dict = {
                 'Vorname': self.E_vname.get().replace(" ", ""),
                 'Nachname': self.E_nname.get().replace(" ", ""),
                 'PLZ': self.E_PLZ.get().replace(" ", ""),
@@ -287,39 +272,42 @@ class P_Owner(Page):
             }
 
             # Build Dictionary of Termin related values if Termin is true
-            if isAddDate == 0:
-                TerminDict = None
+            if is_add_date == 0:
+                termin_dict = None
             else:
                 if self.thisDate.get() == 1:
-                    dateString = datetime.today().strftime('%Y-%m-%d')
-                    Datum = datetime.strptime(dateString, '%Y-%m-%d')
+                    date_string = datetime.today().strftime('%Y-%m-%d')
+                    datum = datetime.strptime(date_string, '%Y-%m-%d')
                 else:
-                    if self.thisDate.get() == 0:
-                        dateString = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
-                        Datum = datetime.strptime(dateString, '%Y-%m-%d')
-                TerminDict = {
-                    'Datum': Datum,
+                    # if self.thisDate.get() == 0:
+                    date_string = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
+                    datum = datetime.strptime(date_string, '%Y-%m-%d')
+                termin_dict = {
+                    'Datum': datum,
                     'Huehner': int(self.E_Huehner.get().replace(" ", "")),
                     'bezahlt': bool(self.paid.get())
                 }
-            self.commitOwner(OwnerDict, isAddDate, TerminDict)
+            self.commit_owner(owner_dict, is_add_date, termin_dict)
         else:
             self.StatusText.set("Bitte fülle alle Pflichtfelder und achte auf sinnvolle Eingaben!")
 
-    def commitOwner(self, OwnerDict, isAddTermin, TerminDict=None):
-        if isAddTermin == 0:
-            dba.addOwnerReturnBID(OwnerDict['Nachname'], OwnerDict['PLZ'], OwnerDict['Ort'], OwnerDict['Strasse'],
-                              OwnerDict['Hausnummer'], OwnerDict['Vorname'], OwnerDict['Telefonnummer'])
-            self.StatusText.set("Besitzer " + str(OwnerDict) + " wurde hinzugefügt!")
+    def commit_owner(self, owner_dict, is_add_termin, termin_dict=None):
+        if is_add_termin == 0:
+            dba.add_owner_return_bid(owner_dict['Nachname'], owner_dict['PLZ'], owner_dict['Ort'],
+                                     owner_dict['Strasse'],
+                                     owner_dict['Hausnummer'], owner_dict['Vorname'], owner_dict['Telefonnummer'])
+            self.StatusText.set("Besitzer " + str(owner_dict) + " wurde hinzugefügt!")
         else:
-            BID = dba.addOwnerReturnBID(OwnerDict['Nachname'], OwnerDict['PLZ'], OwnerDict['Ort'], OwnerDict['Strasse'],
-                                    OwnerDict['Hausnummer'], OwnerDict['Vorname'], OwnerDict['Telefonnummer'])
-            if BID == -1:
+            bid = dba.add_owner_return_bid(owner_dict['Nachname'], owner_dict['PLZ'], owner_dict['Ort'],
+                                           owner_dict['Strasse'],
+                                           owner_dict['Hausnummer'], owner_dict['Vorname'], owner_dict['Telefonnummer'])
+            if bid == -1:
                 raise Exception("Fehler")
 
-            IID = dba.addTerminReturnIID(TerminDict['Datum'], TerminDict['Huehner'], TerminDict['bezahlt'])
+            iid = dba.add_termin_return_iid(termin_dict['Datum'], termin_dict['Huehner'], termin_dict['bezahlt'])
 
-            # cur.execute("""SELECT bid FROM besitzer WHERE nachname=%s and plz=%s and ortsname=%s and strassenname=%s and
+            # cur.execute("""SELECT bid FROM besitzer WHERE nachname=%s and plz=%s and ortsname=%s and strassenname=%s
+            # and
             #                 hausnummer=%s""",[OwnerDict['Nachname'], OwnerDict['PLZ'], OwnerDict['Ort'],
             #                                   OwnerDict['Strasse'], OwnerDict['Hausnummer']])
             # connection.commit()
@@ -331,12 +319,12 @@ class P_Owner(Page):
             # IID = cur.fetchone()
 
             cur.execute("""INSERT INTO besitzer_impftermin (BID, IID) VALUES (%s,%s);""",
-                        [BID, IID])
+                        [bid, iid])
             connection.commit()
 
-            self.StatusText.set("Besitzer " + str(OwnerDict) + " wurde hinzugefügt!\n" +
-                                "Termin " + str(TerminDict) + " wurde hinzugefügt!\n" +
-                                "Besitzer " + str(BID) + " und Termin " + str(IID) + " wurde assoziert!")
+            self.StatusText.set("Besitzer " + str(owner_dict) + " wurde hinzugefügt!\n" +
+                                "Termin " + str(termin_dict) + " wurde hinzugefügt!\n" +
+                                "Besitzer " + str(bid) + " und Termin " + str(iid) + " wurde assoziert!")
 
     def show(self):
         self.lift()
@@ -344,7 +332,7 @@ class P_Owner(Page):
 
 
 # add appointment for one owner
-class P_AddTerminOne(Page):
+class PageAddTerminOne(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
@@ -354,36 +342,36 @@ class P_AddTerminOne(Page):
         self.Owners = None
         self.Owner = None
 
-        labelBox = tk.Frame(master=self)
-        labelBox.pack(side="top", fill="x", padx="5", pady="5")
-        label = tk.Label(labelBox, text="Einem Besitzer einen neuen Termin hinzufügen", font=55)
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Einem Besitzer einen neuen Termin hinzufügen", font=55)
         label.pack(fill="x", side="left")
 
         self.searchBox = tk.Frame(master=self, borderwidth=2, relief="groove")
         self.searchBox.pack(side="top", fill="x", padx="5", pady="5")
 
-        nameBox = tk.Frame(master=self.searchBox)
-        nameBox.pack(side="top", fill="x", pady=5)
-        L_vname = tk.Label(nameBox, text="Nachname: ").pack(side="left", padx="5")
-        self.E_nname = tk.Entry(nameBox)
+        name_box = tk.Frame(master=self.searchBox)
+        name_box.pack(side="top", fill="x", pady=5)
+        tk.Label(name_box, text="Nachname: ").pack(side="left", padx="5")
+        self.E_nname = tk.Entry(name_box)
         self.E_nname.pack(side="left", padx="5")
 
-        plzBox = tk.Frame(master=self.searchBox)
-        plzBox.pack(side="top", fill="x", pady=5)
-        L_plz = tk.Label(plzBox, text="PLZ: ").pack(side="left", padx="5")
-        self.E_plz = tk.Entry(plzBox)
+        plz_box = tk.Frame(master=self.searchBox)
+        plz_box.pack(side="top", fill="x", pady=5)
+        tk.Label(plz_box, text="PLZ: ").pack(side="left", padx="5")
+        self.E_plz = tk.Entry(plz_box)
         self.E_plz.pack(side="left", padx="43")
 
-        ButtonBox = tk.Frame(master=self.searchBox)
-        ButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        button_box = tk.Frame(master=self.searchBox)
+        button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        B_SearchButton = tk.Button(ButtonBox, text="Suche", command=(
+        button_search_button = tk.Button(button_box, text="Suche", command=(
             lambda: self.search(self.E_nname.get().replace(" ", ""), self.E_plz.get().replace(" ", ""))))
-        B_SearchButton.pack(side="left")
+        button_search_button.pack(side="left")
         self.SearchStatusText = tk.StringVar()
         self.SearchStatusText.set("")
-        L_State = tk.Label(ButtonBox, textvariable=self.SearchStatusText)
-        L_State.pack(side="left", pady="5", padx="20")
+        label_state = tk.Label(button_box, textvariable=self.SearchStatusText)
+        label_state.pack(side="left", pady="5", padx="20")
 
         self.confirmBox = tk.Frame(master=self.searchBox, borderwidth=2, relief="groove")
         self.confirmLabelBox = tk.Frame(master=self.confirmBox)
@@ -397,18 +385,18 @@ class P_AddTerminOne(Page):
         self.choosenOwner = tk.IntVar()
         self.choosenOwner.set(0)
 
-        terminBox = tk.Frame(master=self)
-        terminBox.pack(side="top", fill="x", padx="5", pady="5")
+        termin_box = tk.Frame(master=self)
+        termin_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        ownerBox = tk.Frame(master=terminBox)
-        ownerBox.pack(side="top", fill="x", pady=5)
-        ownerLabelBox = tk.Frame(master=ownerBox)
-        ownerLabelBox.pack(side="top", fill="x", pady=5)
-        L_ownerTitle = tk.Label(ownerLabelBox, text="Besitzer: ").pack(side="left", padx="5")
+        owner_box = tk.Frame(master=termin_box)
+        owner_box.pack(side="top", fill="x", pady=5)
+        owner_label_box = tk.Frame(master=owner_box)
+        owner_label_box.pack(side="top", fill="x", pady=5)
+        tk.Label(owner_label_box, text="Besitzer: ").pack(side="left", padx="5")
         self.OwnerLabelText = tk.StringVar()
         self.OwnerLabelText.set("unbekannt")
-        L_Owner = tk.Label(ownerLabelBox, textvariable=self.OwnerLabelText)
-        L_Owner.pack(side="left", pady="10")
+        label_owner = tk.Label(owner_label_box, textvariable=self.OwnerLabelText)
+        label_owner.pack(side="left", pady="10")
 
         # .pack(side="top", fill="x", padx="5", pady="5")
         # .pack(side="top", fill="x", pady="5")
@@ -416,125 +404,126 @@ class P_AddTerminOne(Page):
 
         # Termin hinzufügen
 
-        DatumBox = tk.Frame(master=terminBox)
-        DatumBox.pack(side="top", fill="x", pady="5")
+        datum_box = tk.Frame(master=termin_box)
+        datum_box.pack(side="top", fill="x", pady="5")
 
         self.thisDate = tk.IntVar()
         self.thisDate.set(1)
-        L_Datum = tk.Label(DatumBox, text="Datum: ")
-        L_Datum.pack(side="left", padx="5")
-        RB_thisDateTrue = tk.Radiobutton(master=DatumBox, text='heute', value='1', variable=self.thisDate)
-        RB_thisDateTrue.pack(side="left", padx="5")
-        L_Oder = tk.Label(DatumBox, text="oder")
-        L_Oder.pack(side="left", padx="5")
-        RB_thisDateFalse = tk.Radiobutton(master=DatumBox, text='anderes Datum', value='0', variable=self.thisDate)
-        RB_thisDateFalse.pack(side="left", padx="5")
+        label_datum = tk.Label(datum_box, text="Datum: ")
+        label_datum.pack(side="left", padx="5")
+        radiobutton_this_date_true = tk.Radiobutton(master=datum_box, text='heute', value='1', variable=self.thisDate)
+        radiobutton_this_date_true.pack(side="left", padx="5")
+        label_oder = tk.Label(datum_box, text="oder")
+        label_oder.pack(side="left", padx="5")
+        radiobutton_this_date_false = tk.Radiobutton(master=datum_box, text='anderes Datum', value='0',
+                                                     variable=self.thisDate)
+        radiobutton_this_date_false.pack(side="left", padx="5")
         self.day = tk.IntVar()
         self.day.set(1)
-        Sb_day = ttk.Spinbox(DatumBox, from_=1, to=31, textvariable=self.day, width=5)
-        Sb_day.pack(side="left", padx="5")
+        spinbox_day = ttk.Spinbox(datum_box, from_=1, to=31, textvariable=self.day, width=5)
+        spinbox_day.pack(side="left", padx="5")
         self.month = tk.IntVar()
         self.month.set(1)
-        Sb_month = ttk.Spinbox(DatumBox, from_=1, to=12, textvariable=self.month, width=5)
-        Sb_month.pack(side="left", padx="5")
+        spinbox_month = ttk.Spinbox(datum_box, from_=1, to=12, textvariable=self.month, width=5)
+        spinbox_month.pack(side="left", padx="5")
         self.year = tk.IntVar()
         self.year.set(2021)
-        Sb_year = ttk.Spinbox(DatumBox, from_=2019, to=2030, textvariable=self.year, width=5)
-        Sb_year.pack(side="left", padx="5")
+        spinbox_year = ttk.Spinbox(datum_box, from_=2019, to=2030, textvariable=self.year, width=5)
+        spinbox_year.pack(side="left", padx="5")
 
-        HuehnerBox = tk.Frame(master=terminBox)
-        HuehnerBox.pack(side="top", fill="x", pady="5")
-        L_Huehner = tk.Label(HuehnerBox, text="Anzahl der Hühner: ")
-        L_Huehner.pack(side="left", padx="5")
-        self.E_Huehner = tk.Entry(HuehnerBox)
+        huehner_box = tk.Frame(master=termin_box)
+        huehner_box.pack(side="top", fill="x", pady="5")
+        label_huehner = tk.Label(huehner_box, text="Anzahl der Hühner: ")
+        label_huehner.pack(side="left", padx="5")
+        self.E_Huehner = tk.Entry(huehner_box)
         self.E_Huehner.pack(side="left", padx="5")
 
-        PaidBox = tk.Frame(master=terminBox)
-        PaidBox.pack(side="top", fill="x", pady="5")
-        L_Paid = tk.Label(PaidBox, text="bezahlt: ")
-        L_Paid.pack(side="left", padx="5")
+        paid_box = tk.Frame(master=termin_box)
+        paid_box.pack(side="top", fill="x", pady="5")
+        label_paid = tk.Label(paid_box, text="bezahlt: ")
+        label_paid.pack(side="left", padx="5")
         self.paid = tk.IntVar()
-        CB_Paid = tk.Checkbutton(PaidBox, text="", variable=self.paid)
-        CB_Paid.pack(side="left", padx="5")
+        checkbutton_paid = tk.Checkbutton(paid_box, text="", variable=self.paid)
+        checkbutton_paid.pack(side="left", padx="5")
 
-        CommitButtonBox = tk.Frame(master=terminBox)
-        CommitButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        commit_button_box = tk.Frame(master=termin_box)
+        commit_button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        self.B_CommitButton = tk.Button(CommitButtonBox, text="Speichern",
-                                        command=(lambda: self.testInput(self.Owner[0])))
+        self.B_CommitButton = tk.Button(commit_button_box, text="Speichern",
+                                        command=(lambda: self.test_input(self.Owner[0])))
         self.B_CommitButton.config(state="disabled")
         self.B_CommitButton.pack(side="left")
 
-        StatusBox = tk.Frame(master=self)
-        StatusBox.pack(side="top", fill="x", padx="5", pady="5")
+        status_box = tk.Frame(master=self)
+        status_box.pack(side="top", fill="x", padx="5", pady="5")
 
         self.StatusText = tk.StringVar()
-        L_State = tk.Label(StatusBox, textvariable=self.StatusText)
-        L_State.pack(side="left", pady="5")
+        label_state = tk.Label(status_box, textvariable=self.StatusText)
+        label_state.pack(side="left", pady="5")
 
-    def testInput(self, BID):
-        validInput = True
+    def test_input(self, bid):
+        valid_input = True
 
-        if self.day == None:
-            validInput = False
-        if self.month == None:
-            validInput = False
-        if self.year == None:
-            validInput = False
+        if self.day is None:
+            valid_input = False
+        if self.month is None:
+            valid_input = False
+        if self.year is None:
+            valid_input = False
         if not (self.E_Huehner.get().replace(" ", "").isnumeric()):
-            validInput = False
+            valid_input = False
 
-        isEmpty = False
+        is_empty = False
         if len(self.E_Huehner.get()) == 0:
-            isEmpty = True
-        if isEmpty:
+            is_empty = True
+        if is_empty:
             self.StatusText.set("Bitte gebe die Anzahl der Hühner an!")
-            validInput = False
+            valid_input = False
 
         try:
-            dateString = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
-            Datum = datetime.strptime(dateString, '%Y-%m-%d')
+            date_string = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
+            datetime.strptime(date_string, '%Y-%m-%d')
         except Exception as e:
             msg.showerror("Fehlerhaftes Datum!", message="Das von Ihnen eingebene Datum enthält Fehler!\n" + str(e))
-            validInput = False
+            valid_input = False
 
-        if validInput & self.isConfirm:
+        if valid_input & self.isConfirm:
             # Build Dictionary of Termin related values if Termin is true
             if self.thisDate.get() == 1:
-                dateString = datetime.today().strftime('%Y-%m-%d')
-                Datum = datetime.strptime(dateString, '%Y-%m-%d')
+                date_string = datetime.today().strftime('%Y-%m-%d')
+                datum = datetime.strptime(date_string, '%Y-%m-%d')
             else:
-                dateString = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
-                Datum = datetime.strptime(dateString, '%Y-%m-%d')
+                date_string = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
+                datum = datetime.strptime(date_string, '%Y-%m-%d')
 
-            TerminDict = {
-                'Datum': Datum,
+            termin_dict = {
+                'Datum': datum,
                 'Huehner': int(self.E_Huehner.get().replace(" ", "")),
                 'bezahlt': bool(self.paid.get())
             }
-            self.commitTermin(BID, TerminDict)
+            self.commit_termin(bid, termin_dict)
         else:
             self.StatusText.set("Bitte prüfe deine Eingabe oder Suche zuerst nach einem Besitzer!")
 
-    def commitTermin(self, BID, TerminDict):
-        IID = dba.addTerminReturnIID(TerminDict['Datum'], TerminDict['Huehner'], TerminDict['bezahlt'])
+    def commit_termin(self, bid, termin_dict):
+        iid = dba.add_termin_return_iid(termin_dict['Datum'], termin_dict['Huehner'], termin_dict['bezahlt'])
         cur.execute("""INSERT INTO besitzer_impftermin (BID, IID) VALUES (%s,%s);""",
-                    [BID, IID])
+                    [bid, iid])
         connection.commit()
 
-        self.StatusText.set("Termin " + str(TerminDict) + " wurde hinzugefügt!\n" +
-                            "Besitzer " + str(BID) + " und Termin " + str(IID) + " wurde assoziert!")
+        self.StatusText.set("Termin " + str(termin_dict) + " wurde hinzugefügt!\n" +
+                            "Besitzer " + str(bid) + " und Termin " + str(iid) + " wurde assoziert!")
 
-    def search(self, Nachname: str, PLZ: str):
-        Nachname = Nachname.replace(" ", "")
-        PLZ = PLZ.replace(" ", "")
+    def search(self, nachname: str, plz: str):
+        nachname = nachname.replace(" ", "")
+        plz = plz.replace(" ", "")
 
         cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [Nachname, PLZ])
+                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
         connection.commit()
         self.Owners = cur.fetchall()
 
-        if self.Owners == []:
+        if not self.Owners:
             self.confirmBox.pack_forget()
             self.confirmLabelBox.pack_forget()
             self.L_confirmTitle.pack_forget()
@@ -556,10 +545,10 @@ class P_AddTerminOne(Page):
                 self.isDistinct = False
             if len(self.Owners) == 1:
                 self.isDistinct = True
-            if self.isDistinct != None:
-                self.isSearch == True
+            if self.isDistinct is not None:
+                self.isSearch = True
 
-            if self.isDistinct == False:
+            if not self.isDistinct:
                 self.confirmBox.pack_forget()
                 self.confirmLabelBox.pack_forget()
                 self.L_confirmTitle.pack_forget()
@@ -613,8 +602,8 @@ class P_AddTerminOne(Page):
                 for Radiobutton in self.RadiobuttonList:
                     Radiobutton.pack_forget()
 
-    def confirm(self, Owner):
-        self.Owner = Owner
+    def confirm(self, owner):
+        self.Owner = owner
         self.isConfirm = True
         self.B_CommitButton.config(state="normal")
         self.OwnerLabelText.set(str(self.Owner[1]) + " " + str(self.Owner[2]) + ": " +
@@ -628,7 +617,7 @@ class P_AddTerminOne(Page):
 
 # add appointments of the same day for multiple owners
 # TOO DOO Refresh Table on lift
-class P_AddTerminMultiple(Page):
+class PageAddTerminMultiple(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
@@ -638,45 +627,46 @@ class P_AddTerminMultiple(Page):
 
         self.owners = cur.fetchall()
 
-        labelBox = tk.Frame(master=self)
-        labelBox.pack(side="top", fill="x", padx="5", pady="5")
-        label = tk.Label(labelBox, text="Einem Besitzer einen neuen Termin hinzufügen", font=55)
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Einem Besitzer einen neuen Termin hinzufügen", font=55)
         label.pack(fill="x", side="left")
 
-        DatumBox = tk.Frame(master=self)
-        DatumBox.pack(side="top", fill="x", pady="5")
+        datum_box = tk.Frame(master=self)
+        datum_box.pack(side="top", fill="x", pady="5")
 
         # get a date
         self.thisDate = tk.IntVar()
         self.thisDate.set(1)
-        L_Datum = tk.Label(DatumBox, text="Datum: ")
-        L_Datum.pack(side="left", padx="5")
-        RB_thisDateTrue = tk.Radiobutton(master=DatumBox, text='heute', value='1', variable=self.thisDate)
-        RB_thisDateTrue.pack(side="left", padx="5")
-        L_Oder = tk.Label(DatumBox, text="oder")
-        L_Oder.pack(side="left", padx="5")
-        RB_thisDateFalse = tk.Radiobutton(master=DatumBox, text='anderes Datum', value='0', variable=self.thisDate)
-        RB_thisDateFalse.pack(side="left", padx="5")
+        label_datum = tk.Label(datum_box, text="Datum: ")
+        label_datum.pack(side="left", padx="5")
+        radiobutton_this_date_true = tk.Radiobutton(master=datum_box, text='heute', value='1', variable=self.thisDate)
+        radiobutton_this_date_true.pack(side="left", padx="5")
+        label_oder = tk.Label(datum_box, text="oder")
+        label_oder.pack(side="left", padx="5")
+        radiobutton_this_date_false = tk.Radiobutton(master=datum_box, text='anderes Datum', value='0',
+                                                     variable=self.thisDate)
+        radiobutton_this_date_false.pack(side="left", padx="5")
         self.day = tk.IntVar()
         self.day.set(1)
-        Sb_day = ttk.Spinbox(DatumBox, from_=1, to=31, textvariable=self.day, width=5)
-        Sb_day.pack(side="left", padx="5")
+        spinbox_day = ttk.Spinbox(datum_box, from_=1, to=31, textvariable=self.day, width=5)
+        spinbox_day.pack(side="left", padx="5")
         self.month = tk.IntVar()
         self.month.set(1)
-        Sb_month = ttk.Spinbox(DatumBox, from_=1, to=12, textvariable=self.month, width=5)
-        Sb_month.pack(side="left", padx="5")
+        spinbox_month = ttk.Spinbox(datum_box, from_=1, to=12, textvariable=self.month, width=5)
+        spinbox_month.pack(side="left", padx="5")
         self.year = tk.IntVar()
         self.year.set(2021)
-        Sb_year = ttk.Spinbox(DatumBox, from_=2019, to=2030, textvariable=self.year, width=5)
-        Sb_year.pack(side="left", padx="5")
+        spinbox_year = ttk.Spinbox(datum_box, from_=2019, to=2030, textvariable=self.year, width=5)
+        spinbox_year.pack(side="left", padx="5")
 
         # scrollable List of Chechkbuttons for all owners
-        scrollContainerFrame = ttk.Frame(self, borderwidth=2, relief="groove")
-        canvas = tk.Canvas(scrollContainerFrame, height=400, highlightthickness=0)
-        scrollbar = ttk.Scrollbar(scrollContainerFrame, orient="vertical", command=canvas.yview)
+        scroll_container_frame = ttk.Frame(self, borderwidth=2, relief="groove")
+        canvas = tk.Canvas(scroll_container_frame, height=400, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(scroll_container_frame, orient="vertical", command=canvas.yview)
         self.scrollable_frame = ttk.Frame(canvas)
 
-        scrollContainerFrame.pack(side="top", fill="x", padx="5", pady="5")
+        scroll_container_frame.pack(side="top", fill="x", padx="5", pady="5")
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
@@ -691,8 +681,6 @@ class P_AddTerminMultiple(Page):
         # tell the canvas to draw the frame as window starting from top-left
         canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
-
-
 
         self.checkVarList = []
         self.checkBoxList = []
@@ -712,11 +700,13 @@ class P_AddTerminMultiple(Page):
             self.checkButtonBoxList.append(tk.Frame(self.checkBoxList[i]))
             self.terminBoxList.append(tk.Frame(self.checkBoxList[i]))
             self.checkButtonList.append(tk.Checkbutton(self.checkButtonBoxList[i],
-                                                       text=str(owner[1]) + ", " + str(owner[2]) + ": " + str(
-                                                           owner[3]) + " " +
-                                                            str(owner[4]) + " " + str(owner[5]) + " " + str(
-                                                           owner[6]) + " - " +
-                                                            str(owner[7]),
+                                                       text=str(owner[1]) + ", " +
+                                                       str(owner[2]) + ": " +
+                                                       str(owner[3]) + " " +
+                                                       str(owner[4]) + " " +
+                                                       str(owner[5]) + " " +
+                                                       str(owner[6]) + " - " +
+                                                       str(owner[7]),
                                                        variable=self.checkVarList[i], onvalue=1, offvalue=0))
             self.L_huehnerList.append(tk.Label(self.terminBoxList[i], text="Hühner: "))
             self.E_huehnerList.append(tk.Entry(self.terminBoxList[i]))
@@ -735,100 +725,100 @@ class P_AddTerminMultiple(Page):
             self.checkBoxList[i].pack(side="top", fill="x")
             i += 1
 
-        CommitButtonBox = tk.Frame(master=self)
-        CommitButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        commit_button_box = tk.Frame(master=self)
+        commit_button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        self.B_CommitButton = tk.Button(CommitButtonBox, text="Füge Termine hinzu!",
-                                        command=(lambda: self.prepareData()))
+        self.B_CommitButton = tk.Button(commit_button_box, text="Füge Termine hinzu!",
+                                        command=(lambda: self.prepare_data()))
         self.B_CommitButton.pack(side="left")
 
-        if self.owners == []:
+        if not self.owners:
             self.B_CommitButton.config(state="disabled")
 
         # scrollable StatusBox for longStatus
-        StatusContainerFrame = ttk.Frame(self, borderwidth=2, relief="groove")
-        StatusCanvas = tk.Canvas(StatusContainerFrame, height=400)
-        StatusScrollbar = ttk.Scrollbar(StatusContainerFrame, orient="vertical", command=StatusCanvas.yview)
-        self.StatusBox = ttk.Frame(StatusCanvas)
+        status_container_frame = ttk.Frame(self, borderwidth=2, relief="groove")
+        status_canvas = tk.Canvas(status_container_frame, height=400)
+        status_scrollbar = ttk.Scrollbar(status_container_frame, orient="vertical", command=status_canvas.yview)
+        self.StatusBox = ttk.Frame(status_canvas)
 
-        StatusContainerFrame.pack(side="top", fill="x", padx="5", pady="5")
-        StatusCanvas.pack(side="left", fill="both", expand=True)
-        StatusScrollbar.pack(side="right", fill="y")
+        status_container_frame.pack(side="top", fill="x", padx="5", pady="5")
+        status_canvas.pack(side="left", fill="both", expand=True)
+        status_scrollbar.pack(side="right", fill="y")
 
         # on change of contentlength edit scrollregion
         self.StatusBox.bind(
             "<Configure>",
-            lambda e: StatusCanvas.configure(
-                scrollregion=StatusCanvas.bbox("all")
+            lambda e: status_canvas.configure(
+                scrollregion=status_canvas.bbox("all")
             )
         )
 
         # tell the canvas to draw the frame as window starting from top-left
-        StatusCanvas.create_window((0, 0), window=self.StatusBox, anchor="nw")
-        StatusCanvas.configure(yscrollcommand=StatusScrollbar.set)
+        status_canvas.create_window((0, 0), window=self.StatusBox, anchor="nw")
+        status_canvas.configure(yscrollcommand=status_scrollbar.set)
 
         self.StatusText = tk.StringVar()
-        L_State = tk.Label(self.StatusBox, textvariable=self.StatusText)
-        L_State.pack(side="left", pady="5")
+        label_state = tk.Label(self.StatusBox, textvariable=self.StatusText)
+        label_state.pack(side="left", pady="5")
 
-    def commitTermine(self, data):
+    def commit_termine(self, data):
         self.StatusText.set("")
 
         if self.thisDate.get() == 1:
-            dateString = datetime.today().strftime('%Y-%m-%d')
-            Datum = datetime.strptime(dateString, '%Y-%m-%d')
+            date_string = datetime.today().strftime('%Y-%m-%d')
+            datum = datetime.strptime(date_string, '%Y-%m-%d')
         else:
-            dateString = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
-            Datum = datetime.strptime(dateString, '%Y-%m-%d')
+            date_string = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
+            datum = datetime.strptime(date_string, '%Y-%m-%d')
 
         for entry in data:
-            IID = str(dba.addTerminReturnIID(Datum, entry[1], bool(entry[2])))
-            BID = str(entry[0])
+            iid = str(dba.add_termin_return_iid(datum, entry[1], bool(entry[2])))
+            bid = str(entry[0])
             cur.execute("""INSERT INTO besitzer_impftermin (BID, IID)
-                            VALUES (%s,%s);""", [BID, IID])
+                            VALUES (%s,%s);""", [bid, iid])
             connection.commit()
-            StatusText = self.StatusText.get()
-            self.StatusText.set(StatusText + "\n" + "Besitzer Nr.: " + BID + " wurde ein Termin am " +
-                                datetime.strftime(Datum, "%d.%m.%Y") + " für " +
+            status_text = self.StatusText.get()
+            self.StatusText.set(status_text + "\n" + "Besitzer Nr.: " + bid + " wurde ein Termin am " +
+                                datetime.strftime(datum, "%d.%m.%Y") + " für " +
                                 str(entry[1]) + " Hühner hinzugefügt!")
 
-    def prepareData(self):
+    def prepare_data(self):
         data = []  # data structure: [[BID,anzahlhuener,bezahlt],...]
 
-        validInput = True
+        valid_input = True
 
-        if self.day == None:
-            validInput = False
-        if self.month == None:
-            validInput = False
-        if self.year == None:
-            validInput = False
+        if self.day is None:
+            valid_input = False
+        if self.month is None:
+            valid_input = False
+        if self.year is None:
+            valid_input = False
 
         try:
-            dateString = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
-            Datum = datetime.strptime(dateString, '%Y-%m-%d')
+            date_string = str(self.year.get()) + "-" + str(self.month.get()) + "-" + str(self.day.get())
+            datetime.strptime(date_string, '%Y-%m-%d')
         except Exception as e:
             msg.showerror("Fehlerhaftes Datum!", message="Das von Ihnen eingebene Datum enthält Fehler!\n" + str(e))
-            validInput = False
+            valid_input = False
 
         i = 0
-        for checkButton in self.checkButtonList:
+        for _ in self.checkButtonList:
             if self.checkVarList[i].get() == 1:
 
-                Huehner = self.E_huehnerList[i].get()
-                Huehner = Huehner.replace(" ", "")
+                huehner = self.E_huehnerList[i].get()
+                huehner = huehner.replace(" ", "")
 
-                if len(Huehner) == 0:
-                    validInput = False
+                if len(huehner) == 0:
+                    valid_input = False
 
-                if not (Huehner.isnumeric()):
-                    validInput = False
+                if not (huehner.isnumeric()):
+                    valid_input = False
 
-                data.append([self.owners[i][0], Huehner, self.paidVar[i].get()])
+                data.append([self.owners[i][0], huehner, self.paidVar[i].get()])
             i += 1
 
-        if validInput:
-            self.commitTermine(data)
+        if valid_input:
+            self.commit_termine(data)
         else:
             self.StatusText.set("Bitte prüfe deine Eingabe auf vollständigkeit!")
 
@@ -838,7 +828,7 @@ class P_AddTerminMultiple(Page):
 
 
 # Page Confirm Payment - user can validate or invalidate a payment of one appointment
-class P_ConfirmPayment(Page):
+class PageConfirmPayment(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
@@ -848,37 +838,37 @@ class P_ConfirmPayment(Page):
         self.Owners = None
         self.Owner = None
 
-        labelBox = tk.Frame(master=self)
-        labelBox.pack(side="top", fill="x", padx="5", pady="5")
-        label = tk.Label(labelBox, text="Zahlungen eines Besitzers bearbeiten", font=55)
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Zahlungen eines Besitzers bearbeiten", font=55)
         label.pack(fill="x", side="left")
 
         self.searchBox = tk.Frame(master=self, borderwidth=2, relief="groove")
         self.searchBox.pack(side="top", fill="x", padx="5", pady="5")
 
-        nameBox = tk.Frame(master=self.searchBox)
-        nameBox.pack(side="top", fill="x", pady=5)
-        L_vname = tk.Label(nameBox, text="Nachname: ").pack(side="left", padx="5")
-        self.E_nname = tk.Entry(nameBox)
+        name_box = tk.Frame(master=self.searchBox)
+        name_box.pack(side="top", fill="x", pady=5)
+        tk.Label(name_box, text="Nachname: ").pack(side="left", padx="5")
+        self.E_nname = tk.Entry(name_box)
         self.E_nname.pack(side="left", padx="5")
 
-        plzBox = tk.Frame(master=self.searchBox)
-        plzBox.pack(side="top", fill="x", pady=5)
-        L_plz = tk.Label(plzBox, text="PLZ: ").pack(side="left", padx="5")
-        self.E_plz = tk.Entry(plzBox)
+        plz_box = tk.Frame(master=self.searchBox)
+        plz_box.pack(side="top", fill="x", pady=5)
+        tk.Label(plz_box, text="PLZ: ").pack(side="left", padx="5")
+        self.E_plz = tk.Entry(plz_box)
         self.E_plz.pack(side="left", padx="43")
 
-        ButtonBox = tk.Frame(master=self.searchBox)
-        ButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        button_box = tk.Frame(master=self.searchBox)
+        button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        B_SearchButton = tk.Button(ButtonBox, text="Suche",
-                                   command=(lambda: self.search(self.E_nname.get().replace(" ", ""),
-                                                                self.E_plz.get().replace(" ", ""))))
-        B_SearchButton.pack(side="left")
+        button_search_button = tk.Button(button_box, text="Suche",
+                                         command=(lambda: self.search(self.E_nname.get().replace(" ", ""),
+                                                                      self.E_plz.get().replace(" ", ""))))
+        button_search_button.pack(side="left")
         self.SearchStatusText = tk.StringVar()
         self.SearchStatusText.set("")
-        L_State = tk.Label(ButtonBox, textvariable=self.SearchStatusText)
-        L_State.pack(side="left", pady="5", padx="20")
+        label_state = tk.Label(button_box, textvariable=self.SearchStatusText)
+        label_state.pack(side="left", pady="5", padx="20")
 
         self.confirmBox = tk.Frame(master=self.searchBox, borderwidth=2, relief="groove")
         self.confirmLabelBox = tk.Frame(master=self.confirmBox)
@@ -895,15 +885,15 @@ class P_ConfirmPayment(Page):
         self.TerminBox = tk.Frame(master=self)
         self.TerminBox.pack(side="top", fill="x", padx="5", pady="5")
 
-        ownerBox = tk.Frame(master=self.TerminBox)
-        ownerBox.pack(side="top", fill="x", pady=5)
-        ownerLabelBox = tk.Frame(master=ownerBox)
-        ownerLabelBox.pack(side="top", fill="x", pady=5)
-        L_ownerTitle = tk.Label(ownerLabelBox, text="Besitzer: ").pack(side="left", padx="5")
+        owner_box = tk.Frame(master=self.TerminBox)
+        owner_box.pack(side="top", fill="x", pady=5)
+        owner_label_box = tk.Frame(master=owner_box)
+        owner_label_box.pack(side="top", fill="x", pady=5)
+        tk.Label(owner_label_box, text="Besitzer: ").pack(side="left", padx="5")
         self.OwnerLabelText = tk.StringVar()
         self.OwnerLabelText.set("unbekannt")
-        L_Owner = tk.Label(ownerLabelBox, textvariable=self.OwnerLabelText)
-        L_Owner.pack(side="left", pady="10")
+        label_owner = tk.Label(owner_label_box, textvariable=self.OwnerLabelText)
+        label_owner.pack(side="left", pady="10")
 
         self.TerminRadiobuttonBoxList = []
         self.TerminRadiobuttonList = []
@@ -911,53 +901,53 @@ class P_ConfirmPayment(Page):
         self.choosenTermin = tk.IntVar()
         self.choosenTermin.set(0)
 
-        PaymentButtonBox = tk.Frame(master=self.TerminBox)
-        PaymentButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        payment_button_box = tk.Frame(master=self.TerminBox)
+        payment_button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        self.B_hasPaid = tk.Button(PaymentButtonBox, text="Hat bezahlt!",
-                                   command=(lambda: self.hasPaid(self.Termine[self.choosenTermin.get()][0])))
+        self.B_hasPaid = tk.Button(payment_button_box, text="Hat bezahlt!",
+                                   command=(lambda: self.has_paid(self.Termine[self.choosenTermin.get()][0])))
         self.B_hasPaid.config(state="disabled")
         self.B_hasPaid.pack(side="left", padx="10")
-        self.B_hasNotPaid = tk.Button(PaymentButtonBox, text="Hat nicht bezahlt!",
-                                      command=(lambda: self.hasNotPaid(self.Termine[self.choosenTermin.get()][0])))
+        self.B_hasNotPaid = tk.Button(payment_button_box, text="Hat nicht bezahlt!",
+                                      command=(lambda: self.has_not_paid(self.Termine[self.choosenTermin.get()][0])))
         self.B_hasNotPaid.config(state="disabled")
         self.B_hasNotPaid.pack(side="left", padx="10")
 
-        StatusBox = tk.Frame(master=self.TerminBox)
-        StatusBox.pack(side="top", fill="x", padx="5", pady="5")
+        status_box = tk.Frame(master=self.TerminBox)
+        status_box.pack(side="top", fill="x", padx="5", pady="5")
 
         self.StatusText = tk.StringVar()
-        L_State = tk.Label(StatusBox, textvariable=self.StatusText)
-        L_State.pack(side="left", pady="5")
+        label_state = tk.Label(status_box, textvariable=self.StatusText)
+        label_state.pack(side="left", pady="5")
 
-    def hasPaid(self, IID):
+    def has_paid(self, iid):
         cur.execute("""UPDATE impftermin
                         SET bezahlt = true
-                        WHERE iid = %s;""", [IID])
+                        WHERE iid = %s;""", [iid])
         connection.commit()
         self.StatusText.set(self.Owner[2] + " " + self.Owner[1] + " hat bezahlt für den Termin am "
                             + datetime.strftime(self.Termine[self.choosenTermin.get()][1], "%d.%m.%Y"))
-        self.printTermin(self.Owner[0])
+        self.print_termin(self.Owner[0])
 
-    def hasNotPaid(self, IID):
+    def has_not_paid(self, iid):
         cur.execute("""UPDATE impftermin
                                 SET bezahlt = false
-                                WHERE iid = %s;""", [IID])
+                                WHERE iid = %s;""", [iid])
         connection.commit()
         self.StatusText.set(self.Owner[2] + " " + self.Owner[1] + " hat NICHT bezahlt für den Termin am "
                             + datetime.strftime(self.Termine[self.choosenTermin.get()][1], "%d.%m.%Y"))
-        self.printTermin(self.Owner[0])
+        self.print_termin(self.Owner[0])
 
-    def printTermin(self, BID):
+    def print_termin(self, iid):
         cur.execute("""Select * FROM impftermin
                         JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
                         WHERE bi.BID = %s
-                        ORDER BY datum,anzahlhuehner;""", [BID])
+                        ORDER BY datum,anzahlhuehner;""", [iid])
         connection.commit()
 
         self.Termine = cur.fetchall()
 
-        if self.Termine != []:
+        if self.Termine:
             for TerminRadiobuttonBox in self.TerminRadiobuttonBoxList:
                 TerminRadiobuttonBox.pack_forget()
 
@@ -976,9 +966,9 @@ class P_ConfirmPayment(Page):
             for Termin in self.Termine:
                 self.TerminRadiobuttonBoxList.append(tk.Frame(master=self.TerminBox))
                 self.TerminRadiobuttonList.append(tk.Radiobutton(master=self.TerminRadiobuttonBoxList[i],
-                                                                 text=Termin[1].strftime("%d.%m.%Y") + ": " + str(
-                                                                     Termin[2])
-                                                                      + " Hühner, bezahlt: " + str(Termin[3]).replace(
+                                                                 text=Termin[1].strftime("%d.%m.%Y") + ": " +
+                                                                 str(Termin[2]) +
+                                                                 " Hühner, bezahlt: " + str(Termin[3]).replace(
                                                                      "True", "Ja").replace("False", "Nein"),
                                                                  variable=self.choosenTermin,
                                                                  value=i))
@@ -1000,16 +990,16 @@ class P_ConfirmPayment(Page):
             self.B_hasNotPaid.config(state="disabled")
             self.StatusText.set("Für diesen Besitzer wurden leider keine Termine gefunden!")
 
-    def search(self, Nachname: str, PLZ: str):
-        Nachname = Nachname.replace(" ", "")
-        PLZ = PLZ.replace(" ", "")
+    def search(self, nachname: str, plz: str):
+        nachname = nachname.replace(" ", "")
+        plz = plz.replace(" ", "")
 
         cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [Nachname, PLZ])
+                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
         connection.commit()
         self.Owners = cur.fetchall()
 
-        if self.Owners == []:
+        if not self.Owners:
             self.confirmBox.pack_forget()
             self.confirmLabelBox.pack_forget()
             self.L_confirmTitle.pack_forget()
@@ -1031,10 +1021,10 @@ class P_ConfirmPayment(Page):
                 self.isDistinct = False
             if len(self.Owners) == 1:
                 self.isDistinct = True
-            if self.isDistinct != None:
-                self.isSearch == True
+            if self.isDistinct is not None:
+                self.isSearch = True
 
-            if self.isDistinct == False:
+            if not self.isDistinct:
                 self.confirmBox.pack_forget()
                 self.confirmLabelBox.pack_forget()
                 self.L_confirmTitle.pack_forget()
@@ -1087,12 +1077,12 @@ class P_ConfirmPayment(Page):
                 for Radiobutton in self.RadiobuttonList:
                     Radiobutton.pack_forget()
 
-    def confirm(self, Owner):
-        self.Owner = Owner
+    def confirm(self, owner):
+        self.Owner = owner
         self.isConfirm = True
         self.B_hasPaid.config(state="normal")
         self.B_hasNotPaid.config(state="normal")
-        self.printTermin(Owner[0])
+        self.print_termin(owner[0])
         self.OwnerLabelText.set(str(self.Owner[1]) + " " + str(self.Owner[2]) + ": " +
                                 str(self.Owner[3]) + " " + str(self.Owner[4]) + " " + str(self.Owner[5]) + " " +
                                 str(self.Owner[6]) + " - " + str(self.Owner[7]))
@@ -1103,7 +1093,7 @@ class P_ConfirmPayment(Page):
 
 
 # Page delete Termin - user can delete a appointment for a choosen owner
-class P_DeleteDate(Page):
+class PageDeleteDate(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
@@ -1113,36 +1103,36 @@ class P_DeleteDate(Page):
         self.Owners = None
         self.Owner = None
 
-        labelBox = tk.Frame(master=self)
-        labelBox.pack(side="top", fill="x", padx="5", pady="5")
-        label = tk.Label(labelBox, text="Termin eines Besitzers löschen", font=55)
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Termin eines Besitzers löschen", font=55)
         label.pack(fill="x", side="left")
 
         self.searchBox = tk.Frame(master=self, borderwidth=2, relief="groove")
         self.searchBox.pack(side="top", fill="x", padx="5", pady="5")
 
-        nameBox = tk.Frame(master=self.searchBox)
-        nameBox.pack(side="top", fill="x", pady=5)
-        L_vname = tk.Label(nameBox, text="Nachname: ").pack(side="left", padx="5")
-        self.E_nname = tk.Entry(nameBox)
+        name_box = tk.Frame(master=self.searchBox)
+        name_box.pack(side="top", fill="x", pady=5)
+        tk.Label(name_box, text="Nachname: ").pack(side="left", padx="5")
+        self.E_nname = tk.Entry(name_box)
         self.E_nname.pack(side="left", padx="5")
 
-        plzBox = tk.Frame(master=self.searchBox)
-        plzBox.pack(side="top", fill="x", pady=5)
-        L_plz = tk.Label(plzBox, text="PLZ: ").pack(side="left", padx="5")
-        self.E_plz = tk.Entry(plzBox)
+        plz_box = tk.Frame(master=self.searchBox)
+        plz_box.pack(side="top", fill="x", pady=5)
+        tk.Label(plz_box, text="PLZ: ").pack(side="left", padx="5")
+        self.E_plz = tk.Entry(plz_box)
         self.E_plz.pack(side="left", padx="43")
 
-        ButtonBox = tk.Frame(master=self.searchBox)
-        ButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        button_box = tk.Frame(master=self.searchBox)
+        button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        B_SearchButton = tk.Button(ButtonBox, text="Suche",
-                                   command=(lambda: self.search(self.E_nname.get(), self.E_plz.get())))
-        B_SearchButton.pack(side="left")
+        button_search_button = tk.Button(button_box, text="Suche",
+                                         command=(lambda: self.search(self.E_nname.get(), self.E_plz.get())))
+        button_search_button.pack(side="left")
         self.SearchStatusText = tk.StringVar()
         self.SearchStatusText.set("")
-        L_State = tk.Label(ButtonBox, textvariable=self.SearchStatusText)
-        L_State.pack(side="left", pady="5", padx="20")
+        label_state = tk.Label(button_box, textvariable=self.SearchStatusText)
+        label_state.pack(side="left", pady="5", padx="20")
 
         self.confirmBox = tk.Frame(master=self.searchBox, borderwidth=2, relief="groove")
         self.confirmLabelBox = tk.Frame(master=self.confirmBox)
@@ -1159,15 +1149,15 @@ class P_DeleteDate(Page):
         self.TerminBox = tk.Frame(master=self)
         self.TerminBox.pack(side="top", fill="x", padx="5", pady="5")
 
-        ownerBox = tk.Frame(master=self.TerminBox)
-        ownerBox.pack(side="top", fill="x", pady=5)
-        ownerLabelBox = tk.Frame(master=ownerBox)
-        ownerLabelBox.pack(side="top", fill="x", pady=5)
-        L_ownerTitle = tk.Label(ownerLabelBox, text="Besitzer: ").pack(side="left", padx="5")
+        owner_box = tk.Frame(master=self.TerminBox)
+        owner_box.pack(side="top", fill="x", pady=5)
+        owner_label_box = tk.Frame(master=owner_box)
+        owner_label_box.pack(side="top", fill="x", pady=5)
+        tk.Label(owner_label_box, text="Besitzer: ").pack(side="left", padx="5")
         self.OwnerLabelText = tk.StringVar()
         self.OwnerLabelText.set("unbekannt")
-        L_Owner = tk.Label(ownerLabelBox, textvariable=self.OwnerLabelText)
-        L_Owner.pack(side="left", pady="10")
+        label_owner = tk.Label(owner_label_box, textvariable=self.OwnerLabelText)
+        label_owner.pack(side="left", pady="10")
 
         self.TerminRadiobuttonBoxList = []
         self.TerminRadiobuttonList = []
@@ -1175,42 +1165,42 @@ class P_DeleteDate(Page):
         self.choosenTermin = tk.IntVar()
         self.choosenTermin.set(0)
 
-        DeletionButtonBox = tk.Frame(master=self.TerminBox)
-        DeletionButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        deletion_button_box = tk.Frame(master=self.TerminBox)
+        deletion_button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        self.B_deleteDate = tk.Button(DeletionButtonBox, text="Termin löschen!",
-                                      command=(lambda: self.deleteDate(self.Termine[self.choosenTermin.get()][0])))
+        self.B_deleteDate = tk.Button(deletion_button_box, text="Termin löschen!",
+                                      command=(lambda: self.delete_date(self.Termine[self.choosenTermin.get()][0])))
         self.B_deleteDate.config(state="disabled")
         self.B_deleteDate.pack(side="left")
 
-        StatusBox = tk.Frame(master=self.TerminBox)
-        StatusBox.pack(side="top", fill="x", padx="5", pady="5")
+        status_box = tk.Frame(master=self.TerminBox)
+        status_box.pack(side="top", fill="x", padx="5", pady="5")
 
         self.StatusText = tk.StringVar()
-        L_State = tk.Label(StatusBox, textvariable=self.StatusText)
-        L_State.pack(side="left", pady="5")
+        label_state = tk.Label(status_box, textvariable=self.StatusText)
+        label_state.pack(side="left", pady="5")
 
-    def deleteDate(self, IID):
+    def delete_date(self, iid):
         cur.execute("""DELETE FROM besitzer_impftermin
-                                WHERE iid = %s;""", [IID])
+                                WHERE iid = %s;""", [iid])
         connection.commit()
         cur.execute("""DELETE FROM impftermin
-                        WHERE iid = %s;""", [IID])
+                        WHERE iid = %s;""", [iid])
         connection.commit()
         self.B_deleteDate.config(state="disabled")
-        self.StatusText.set("Termin Nummer " + str(IID) + " gelöscht!")
-        self.printTermin(self.Owner[0])
+        self.StatusText.set("Termin Nummer " + str(iid) + " gelöscht!")
+        self.print_termin(self.Owner[0])
 
-    def printTermin(self, BID):
+    def print_termin(self, bid):
         cur.execute("""Select * FROM impftermin
                         JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
                         WHERE bi.BID = %s
-                        ORDER BY datum,anzahlhuehner;""", [BID])
+                        ORDER BY datum,anzahlhuehner;""", [bid])
         connection.commit()
 
         self.Termine = cur.fetchall()
 
-        if self.Termine != []:
+        if self.Termine:
             for TerminRadiobuttonBox in self.TerminRadiobuttonBoxList:
                 TerminRadiobuttonBox.pack_forget()
 
@@ -1227,10 +1217,11 @@ class P_DeleteDate(Page):
             for Termin in self.Termine:
                 self.TerminRadiobuttonBoxList.append(tk.Frame(master=self.TerminBox))
                 self.TerminRadiobuttonList.append(tk.Radiobutton(master=self.TerminRadiobuttonBoxList[i],
-                                                                 text=Termin[1].strftime("%d.%m.%Y") + ": " + str(
-                                                                     Termin[2])
-                                                                      + " Hühner, bezahlt: " + str(Termin[3]).replace(
-                                                                     "True", "Ja").replace("False", "Nein"),
+                                                                 text=Termin[1].strftime("%d.%m.%Y") + ": " +
+                                                                 str(Termin[2]) +
+                                                                 " Hühner, bezahlt: " +
+                                                                 str(Termin[3]).replace("True", "Ja").replace("False",
+                                                                                                              "Nein"),
                                                                  variable=self.choosenTermin,
                                                                  value=i))
                 self.TerminRadiobuttonBoxList[i].pack(side="top", fill="x", pady="5")
@@ -1250,16 +1241,16 @@ class P_DeleteDate(Page):
             self.B_deleteDate.config(state="disabled")
             self.StatusText.set("Für diesen Besitzer wurden leider keine Termine gefunden!")
 
-    def search(self, Nachname: str, PLZ: str):
-        Nachname = Nachname.replace(" ", "")
-        PLZ = PLZ.replace(" ", "")
+    def search(self, nachname: str, plz: str):
+        nachname = nachname.replace(" ", "")
+        plz = plz.replace(" ", "")
 
         cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [Nachname, PLZ])
+                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
         connection.commit()
         self.Owners = cur.fetchall()
 
-        if self.Owners == []:
+        if not self.Owners:
             self.confirmBox.pack_forget()
             self.confirmLabelBox.pack_forget()
             self.L_confirmTitle.pack_forget()
@@ -1281,10 +1272,10 @@ class P_DeleteDate(Page):
                 self.isDistinct = False
             if len(self.Owners) == 1:
                 self.isDistinct = True
-            if self.isDistinct != None:
-                self.isSearch == True
+            if self.isDistinct is not None:
+                self.isSearch = True
 
-            if self.isDistinct == False:
+            if not self.isDistinct:
                 self.confirmBox.pack_forget()
                 self.confirmLabelBox.pack_forget()
                 self.L_confirmTitle.pack_forget()
@@ -1337,11 +1328,11 @@ class P_DeleteDate(Page):
                 for Radiobutton in self.RadiobuttonList:
                     Radiobutton.pack_forget()
 
-    def confirm(self, Owner):
-        self.Owner = Owner
+    def confirm(self, owner):
+        self.Owner = owner
         self.isConfirm = True
         self.B_deleteDate.config(state="normal")
-        self.printTermin(Owner[0])
+        self.print_termin(owner[0])
         self.OwnerLabelText.set(str(self.Owner[1]) + " " + str(self.Owner[2]) + ": " +
                                 str(self.Owner[3]) + " " + str(self.Owner[4]) + " " + str(self.Owner[5]) + " " +
                                 str(self.Owner[6]) + " - " + str(self.Owner[7]))
@@ -1352,7 +1343,7 @@ class P_DeleteDate(Page):
 
 
 # Page delete Owner - user can delete a
-class P_DeleteOwner(Page):
+class PageDeleteOwner(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
@@ -1362,36 +1353,36 @@ class P_DeleteOwner(Page):
         self.Owners = None
         self.Owner = None
 
-        labelBox = tk.Frame(master=self)
-        labelBox.pack(side="top", fill="x", padx="5", pady="5")
-        label = tk.Label(labelBox, text="Besitzer löschen", font=55)
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Besitzer löschen", font=55)
         label.pack(fill="x", side="left")
 
         self.searchBox = tk.Frame(master=self, borderwidth=2, relief="groove")
         self.searchBox.pack(side="top", fill="x", padx="5", pady="5")
 
-        nameBox = tk.Frame(master=self.searchBox)
-        nameBox.pack(side="top", fill="x", pady=5)
-        L_vname = tk.Label(nameBox, text="Nachname: ").pack(side="left", padx="5")
-        self.E_nname = tk.Entry(nameBox)
+        name_box = tk.Frame(master=self.searchBox)
+        name_box.pack(side="top", fill="x", pady=5)
+        tk.Label(name_box, text="Nachname: ").pack(side="left", padx="5")
+        self.E_nname = tk.Entry(name_box)
         self.E_nname.pack(side="left", padx="5")
 
-        plzBox = tk.Frame(master=self.searchBox)
-        plzBox.pack(side="top", fill="x", pady=5)
-        L_plz = tk.Label(plzBox, text="PLZ: ").pack(side="left", padx="5")
-        self.E_plz = tk.Entry(plzBox)
+        plz_box = tk.Frame(master=self.searchBox)
+        plz_box.pack(side="top", fill="x", pady=5)
+        tk.Label(plz_box, text="PLZ: ").pack(side="left", padx="5")
+        self.E_plz = tk.Entry(plz_box)
         self.E_plz.pack(side="left", padx="43")
 
-        ButtonBox = tk.Frame(master=self.searchBox)
-        ButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        button_box = tk.Frame(master=self.searchBox)
+        button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        B_SearchButton = tk.Button(ButtonBox, text="Suche",
-                                   command=(lambda: self.search(self.E_nname.get(), self.E_plz.get())))
-        B_SearchButton.pack(side="left")
+        button_search_button = tk.Button(button_box, text="Suche",
+                                         command=(lambda: self.search(self.E_nname.get(), self.E_plz.get())))
+        button_search_button.pack(side="left")
         self.SearchStatusText = tk.StringVar()
         self.SearchStatusText.set("")
-        L_State = tk.Label(ButtonBox, textvariable=self.SearchStatusText)
-        L_State.pack(side="left", pady="5", padx="20")
+        label_state = tk.Label(button_box, textvariable=self.SearchStatusText)
+        label_state.pack(side="left", pady="5", padx="20")
 
         self.confirmBox = tk.Frame(master=self.searchBox, borderwidth=2, relief="groove")
         self.confirmLabelBox = tk.Frame(master=self.confirmBox)
@@ -1405,43 +1396,43 @@ class P_DeleteOwner(Page):
         self.choosenOwner = tk.IntVar()
         self.choosenOwner.set(0)
 
-        DeleteBox = tk.Frame(master=self)
-        DeleteBox.pack(side="top", fill="x", padx="5", pady="5")
+        delete_box = tk.Frame(master=self)
+        delete_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        ownerBox = tk.Frame(master=DeleteBox)
-        ownerBox.pack(side="top", fill="x", pady=5)
-        ownerLabelBox = tk.Frame(master=ownerBox)
-        ownerLabelBox.pack(side="top", fill="x", pady=5)
-        L_ownerTitle = tk.Label(ownerLabelBox, text="Besitzer: ").pack(side="left", padx="5")
+        owner_box = tk.Frame(master=delete_box)
+        owner_box.pack(side="top", fill="x", pady=5)
+        owner_label_box = tk.Frame(master=owner_box)
+        owner_label_box.pack(side="top", fill="x", pady=5)
+        tk.Label(owner_label_box, text="Besitzer: ").pack(side="left", padx="5")
         self.OwnerLabelText = tk.StringVar()
         self.OwnerLabelText.set("unbekannt")
-        L_Owner = tk.Label(ownerLabelBox, textvariable=self.OwnerLabelText)
-        L_Owner.pack(side="left", pady="10")
+        label_owner = tk.Label(owner_label_box, textvariable=self.OwnerLabelText)
+        label_owner.pack(side="left", pady="10")
 
-        DeletionButtonBox = tk.Frame(master=DeleteBox)
-        DeletionButtonBox.pack(side="top", fill="x", padx="5", pady="5")
+        deletion_button_box = tk.Frame(master=delete_box)
+        deletion_button_box.pack(side="top", fill="x", padx="5", pady="5")
 
-        self.B_deleteOwner = tk.Button(DeletionButtonBox, text="Besitzer löschen!",
-                                       command=(lambda: self.deleteOwner(self.Owner[0])))
+        self.B_deleteOwner = tk.Button(deletion_button_box, text="Besitzer löschen!",
+                                       command=(lambda: self.delete_owner(self.Owner[0])))
         self.B_deleteOwner.config(state="disabled")
         self.B_deleteOwner.pack(side="left")
 
-        StatusBox = tk.Frame(master=DeleteBox)
-        StatusBox.pack(side="top", fill="x", padx="5", pady="5")
+        status_box = tk.Frame(master=delete_box)
+        status_box.pack(side="top", fill="x", padx="5", pady="5")
 
         self.StatusText = tk.StringVar()
-        L_State = tk.Label(StatusBox, textvariable=self.StatusText)
-        L_State.pack(side="left", pady="5")
+        label_state = tk.Label(status_box, textvariable=self.StatusText)
+        label_state.pack(side="left", pady="5")
 
-    def deleteOwner(self, BID):
+    def delete_owner(self, bid):
         cur.execute("""SELECT impftermin.IID FROM impftermin
                         JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
                         JOIN besitzer b on b.BID = bi.BID
-                        WHERE b.BID = %s;""", [BID])
+                        WHERE b.BID = %s;""", [bid])
         connection.commit()
-        IIDs = cur.fetchall()
+        iids = cur.fetchall()
 
-        for IID in IIDs:
+        for IID in iids:
             cur.execute("""DELETE FROM besitzer_impftermin
                                             WHERE iid = %s;""", [IID])
             connection.commit()
@@ -1450,23 +1441,23 @@ class P_DeleteOwner(Page):
             connection.commit()
 
         cur.execute("""DELETE FROM besitzer
-                                WHERE bid = %s;""", [BID])
+                                WHERE bid = %s;""", [bid])
         connection.commit()
 
         self.B_deleteOwner.config(state="disabled")
-        self.StatusText.set("Besitzer Nummer " + str(BID) + " mit allen Terminen gelöscht!")
+        self.StatusText.set("Besitzer Nummer " + str(bid) + " mit allen Terminen gelöscht!")
         self.search(self.E_nname.get(), self.E_plz.get())
 
-    def search(self, Nachname: str, PLZ: str):
-        Nachname = Nachname.replace(" ", "")
-        PLZ = PLZ.replace(" ", "")
+    def search(self, nachname: str, plz: str):
+        nachname = nachname.replace(" ", "")
+        plz = plz.replace(" ", "")
 
         cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [Nachname, PLZ])
+                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
         connection.commit()
         self.Owners = cur.fetchall()
 
-        if self.Owners == []:
+        if not self.Owners:
             self.confirmBox.pack_forget()
             self.confirmLabelBox.pack_forget()
             self.L_confirmTitle.pack_forget()
@@ -1488,10 +1479,10 @@ class P_DeleteOwner(Page):
                 self.isDistinct = False
             if len(self.Owners) == 1:
                 self.isDistinct = True
-            if self.isDistinct != None:
-                self.isSearch == True
+            if self.isDistinct is not None:
+                self.isSearch = True
 
-            if self.isDistinct == False:
+            if not self.isDistinct:
                 self.confirmBox.pack_forget()
                 self.confirmLabelBox.pack_forget()
                 self.L_confirmTitle.pack_forget()
@@ -1544,8 +1535,8 @@ class P_DeleteOwner(Page):
                 for Radiobutton in self.RadiobuttonList:
                     Radiobutton.pack_forget()
 
-    def confirm(self, Owner):
-        self.Owner = Owner
+    def confirm(self, owner):
+        self.Owner = owner
         self.isConfirm = True
         self.B_deleteOwner.config(state="normal")
         self.OwnerLabelText.set(str(self.Owner[1]) + " " + str(self.Owner[2]) + ": " +
@@ -1559,29 +1550,28 @@ class P_DeleteOwner(Page):
 
 # Content Frame with Menu
 class MainView(tk.Frame):
-
     def __init__(self, *args, **kwargs):
         tk.Frame.__init__(self, *args, **kwargs)
 
         # Pages define and place
-        pVA = P_ViewAllPrintAll(self)
-        pO = P_Owner(self)
-        pTO = P_AddTerminOne(self)
-        pTM = P_AddTerminMultiple(self)
-        pC = P_ConfirmPayment(self)
-        pDD = P_DeleteDate(self)
-        pDO = P_DeleteOwner(self)
+        page_view_print = PageViewAllPrintAll(self)
+        page_owner = PageOwner(self)
+        page_termin_one = PageAddTerminOne(self)
+        page_termin_multiple = PageAddTerminMultiple(self)
+        page_confirm = PageConfirmPayment(self)
+        page_delete_date = PageDeleteDate(self)
+        page_delete_owner = PageDeleteOwner(self)
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
 
-        pVA.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        pO.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        pTO.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        pTM.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        pC.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        pDD.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-        pDO.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_view_print.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_owner.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_termin_one.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_termin_multiple.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_confirm.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_delete_date.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_delete_owner.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
         # Menu for changing pages
         menu = tk.Menu(root)
@@ -1589,28 +1579,28 @@ class MainView(tk.Frame):
         pagemenu = tk.Menu(menu, tearoff=0)
         menu.add_cascade(label="Funktionen", menu=pagemenu)
 
-        pagemenu.add_command(label="Vorschau und Drucken", command=pVA.show)
+        pagemenu.add_command(label="Vorschau und Drucken", command=page_view_print.show)
         pagemenu.add_separator()
 
         addmenu = tk.Menu(pagemenu, tearoff=0)
         pagemenu.add_cascade(label="Hinzufügen", menu=addmenu)
-        addmenu.add_command(label="Besitzer hinzufügen", command=pO.show)
+        addmenu.add_command(label="Besitzer hinzufügen", command=page_owner.show)
 
         terminmenu = tk.Menu(addmenu, tearoff=0)
         addmenu.add_cascade(label="Termin hinzufügen", menu=terminmenu)
-        terminmenu.add_command(label="Ein Besitzer", command=pTO.show)
-        terminmenu.add_command(label="Mehrere Besitzer", command=pTM.show)
+        terminmenu.add_command(label="Ein Besitzer", command=page_termin_one.show)
+        terminmenu.add_command(label="Mehrere Besitzer", command=page_termin_multiple.show)
         pagemenu.add_separator()
 
         deletemenu = tk.Menu(pagemenu, tearoff=0)
         pagemenu.add_cascade(label="Löschen", menu=deletemenu)
-        deletemenu.add_command(label="Besitzer löschen", command=pDO.show)
-        deletemenu.add_command(label="Termin löschen", command=pDD.show)
+        deletemenu.add_command(label="Besitzer löschen", command=page_delete_owner.show)
+        deletemenu.add_command(label="Termin löschen", command=page_delete_date.show)
         pagemenu.add_separator()
 
-        pagemenu.add_command(label="Zahlung bearbeiten", command=pC.show)
+        pagemenu.add_command(label="Zahlung bearbeiten", command=page_confirm.show)
 
-        pVA.show()
+        page_view_print.show()
 
 
 if __name__ == "__main__":

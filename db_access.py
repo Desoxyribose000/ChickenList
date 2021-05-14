@@ -23,27 +23,27 @@ connection.commit()
 
 # Functions
 # Returns formatted data-array fot sheet
-def getAll():
+def get_all():
     cur.execute("SELECT * FROM besitzer order by nachname, vorname;")
     connection.commit()
 
-    ownersList = cur.fetchall()
+    owners_list = cur.fetchall()
 
     x = 0
     data = [["Name", "Adresse", "Telefonnummer", "Termin-datum", "Hühneranzahl", "Bezahlung"]]
 
-    for owner in ownersList:
+    for owner in owners_list:
         data.append([])
         x = x + 1
 
         # hohlt sich die Liste der Termine für diesen Besitzer
-        BesitzerID = owner[0]
+        besitzer_id = owner[0]
         cur.execute("SELECT datum,anzahlhuehner,bezahlt "
                     "FROM impftermin JOIN besitzer_impftermin bi on impftermin.IID = bi.IID "
-                    "WHERE BID = %s ORDER BY datum,anzahlhuehner;", [BesitzerID])
+                    "WHERE BID = %s ORDER BY datum,anzahlhuehner;", [besitzer_id])
         connection.commit()
 
-        terminList = cur.fetchall()
+        termin_list = cur.fetchall()
 
         # schreibt Daten des Besitzers in Tabelle
 
@@ -51,18 +51,18 @@ def getAll():
         data[x].append(str(owner[3] + " " + owner[4] + ", " + owner[5] + " " + owner[6]))  # Adresse
         data[x].append((owner[7]))  # Telefonnummer
 
-        if not terminList:  # if no termine for besitzer append empty values instead and jump to next besitzer
+        if not termin_list:  # if no termine for besitzer append empty values instead and jump to next besitzer
             data[x].append("")
             data[x].append("")
             data[x].append("")
             continue
 
         j = 0
-        while j < len(terminList):
+        while j < len(termin_list):
             for i in range(3):
-                data[x].append(str(terminList[j][i]))
+                data[x].append(str(termin_list[j][i]))
 
-            if j < (len(terminList) - 1):
+            if j < (len(termin_list) - 1):
                 x = x + 1
                 data.append(["", "", ""])
             j += 1
@@ -71,7 +71,7 @@ def getAll():
 
 
 # print DB to xls workbook
-def printAll(fname):
+def print_all(fname):
     # Setup ExcelDatei
     book = xlwt.Workbook()
     sheet = book.add_sheet("Hühnerliste")
@@ -79,7 +79,7 @@ def printAll(fname):
     sheet.col(1).width = 256 * 35
     sheet.col(2).width = 256 * 20
 
-    rowNumb = 1
+    row_numb = 1
 
     # Kopfzeile
     row = sheet.row(0)
@@ -93,37 +93,37 @@ def printAll(fname):
     cur.execute("SELECT * FROM besitzer order by nachname, vorname;")
     connection.commit()
 
-    ownersList = cur.fetchall()
+    owners_list = cur.fetchall()
 
-    for owner in ownersList:
+    for owner in owners_list:
         # hohlt sich die Liste der Termine für diesen Besitzer
-        BesitzerID = owner[0]
+        besitzer_id = owner[0]
         cur.execute("SELECT datum,anzahlhuehner,bezahlt "
                     "FROM impftermin JOIN besitzer_impftermin bi on impftermin.IID = bi.IID "
-                    "WHERE BID = %s ORDER BY datum,anzahlhuehner;", [BesitzerID])
+                    "WHERE BID = %s ORDER BY datum,anzahlhuehner;", [besitzer_id])
         connection.commit()
 
-        terminList = cur.fetchall()
+        termin_list = cur.fetchall()
 
         # schreibt Daten des Besitzers in Tabelle
-        row = sheet.row(rowNumb)
+        row = sheet.row(row_numb)
         row.write(0, str(owner[1] + ", " + owner[2]))  # Nachname, Vorname
         row.write(1, str(owner[3] + " " + owner[4] + ", " + owner[5] + " " + owner[6]))  # Adresse
         row.write(2, str(owner[7]))  # Telefonnummer
 
         j = 0
-        while j < len(terminList):
+        while j < len(termin_list):
             for i in range(3):
                 # col = chr(ord(startChar) + (7+(3*j)+i)) #berechnung Buchstaben (start Buchstabe + offsetBesitzer +
                 # Anzahl der termine * Offset Termine + aktuelle Stelle)
-                row.write(3 + i, str(terminList[j][i]))
+                row.write(3 + i, str(termin_list[j][i]))
 
-            if j < (len(terminList) - 1):
-                rowNumb = rowNumb + 1
-                row = sheet.row(rowNumb)
+            if j < (len(termin_list) - 1):
+                row_numb = row_numb + 1
+                row = sheet.row(row_numb)
             j += 1
 
-        rowNumb = rowNumb + 1  # enable for seperation by empty line for entries
+        row_numb = row_numb + 1  # enable for seperation by empty line for entries
 
     book.save(fname + "/Hühnerliste.xls")
     msg.showinfo("Erfolgreich gespeichert!", "Die Hühner liste wurde erflogreich unter " +
@@ -134,8 +134,8 @@ def printAll(fname):
 
 # add a new Owner to DB
 # all arguments have to be given, if unknown vname or tel: give None
-def addOwnerReturnBID(nname: str, plz: str, ortsname: str, strassenname: str, hausnummer: str, vname: str = None,
-                      tel: str = None):
+def add_owner_return_bid(nname: str, plz: str, ortsname: str, strassenname: str, hausnummer: str, vname: str = None,
+                         tel: str = None):
     try:  # Test values higher then database constraints
         if (len(nname) > 255) | (len(plz) > 10) | (len(ortsname) > 255) | (len(strassenname) > 255) | (
                 len(hausnummer) > 10):
@@ -154,7 +154,7 @@ def addOwnerReturnBID(nname: str, plz: str, ortsname: str, strassenname: str, ha
     if (vname is not None) & (tel is not None):
         cur.execute(f"""INSERT INTO besitzer(nachname, vorname, plz, ortsname, strassenname, hausnummer,tel) 
                         VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING bid;""",
-                    [nname, vname,plz, ortsname, strassenname, hausnummer, tel])
+                    [nname, vname, plz, ortsname, strassenname, hausnummer, tel])
         connection.commit()
         return cur.fetchone()
 
@@ -179,7 +179,7 @@ def addOwnerReturnBID(nname: str, plz: str, ortsname: str, strassenname: str, ha
         return cur.fetchone()
 
 
-def addTerminReturnIID(datum: datetime, huehner: int, bezahlt: bool):
+def add_termin_return_iid(datum: datetime, huehner: int, bezahlt: bool):
     cur.execute("""INSERT INTO impftermin (datum, anzahlhuehner, bezahlt)
                     VALUES (%s, %s, %s) RETURNING impftermin.IID;""", [datum, huehner, bezahlt])
     connection.commit()
