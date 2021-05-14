@@ -660,7 +660,7 @@ class PageAddTerminMultiple(Page):
         spinbox_year = ttk.Spinbox(datum_box, from_=2019, to=2030, textvariable=self.year, width=5)
         spinbox_year.pack(side="left", padx="5")
 
-        # scrollable List of Chechkbuttons for all owners
+        # scrollable List of Checkbuttons for all owners
         scroll_container_frame = ttk.Frame(self, borderwidth=2, relief="groove")
         canvas = tk.Canvas(scroll_container_frame, height=400, highlightthickness=0)
         scrollbar = ttk.Scrollbar(scroll_container_frame, orient="vertical", command=canvas.yview)
@@ -822,7 +822,83 @@ class PageAddTerminMultiple(Page):
         else:
             self.StatusText.set("Bitte prüfe deine Eingabe auf vollständigkeit!")
 
+    def refresh(self):
+
+        cur.execute("""SELECT * FROM besitzer
+                                       ORDER BY nachname,vorname;""")
+        connection.commit()
+
+        self.owners = cur.fetchall()
+
+        for item in self.checkButtonBoxList:
+            item.pack_forget()
+
+        for item in self.terminBoxList:
+            item.pack_forget()
+
+        for item in self.checkButtonList:
+            item.pack_forget()
+
+        for item in self.L_huehnerList:
+            item.pack_forget()
+
+        for item in self.E_huehnerList:
+            item.pack_forget()
+
+        for item in self.L_PaidList:
+            item.pack_forget()
+
+        for item in self.CB_paidList:
+            item.pack_forget()
+
+        for item in self.checkBoxList:
+            item.pack_forget()
+
+        self.checkVarList = []
+        self.checkBoxList = []
+        self.checkButtonBoxList = []
+        self.terminBoxList = []
+        self.E_huehnerList = []
+        self.L_huehnerList = []
+        self.paidVar = []
+        self.CB_paidList = []
+        self.L_PaidList = []
+        self.checkButtonList = []
+
+        i = 0
+        for owner in self.owners:
+            self.checkVarList.append(tk.IntVar())
+            self.checkBoxList.append(tk.Frame(self.scrollable_frame))
+            self.checkButtonBoxList.append(tk.Frame(self.checkBoxList[i]))
+            self.terminBoxList.append(tk.Frame(self.checkBoxList[i]))
+            self.checkButtonList.append(tk.Checkbutton(self.checkButtonBoxList[i],
+                                                       text=str(owner[1]) + ", " +
+                                                            str(owner[2]) + ": " +
+                                                            str(owner[3]) + " " +
+                                                            str(owner[4]) + " " +
+                                                            str(owner[5]) + " " +
+                                                            str(owner[6]) + " - " +
+                                                            str(owner[7]),
+                                                       variable=self.checkVarList[i], onvalue=1, offvalue=0))
+            self.L_huehnerList.append(tk.Label(self.terminBoxList[i], text="Hühner: "))
+            self.E_huehnerList.append(tk.Entry(self.terminBoxList[i]))
+            self.L_PaidList.append(tk.Label(self.terminBoxList[i], text="bezahlt: "))
+            self.paidVar.append(tk.IntVar())
+            self.CB_paidList.append(tk.Checkbutton(self.terminBoxList[i], text="", variable=self.paidVar[i]))
+
+            self.checkButtonBoxList[i].pack(side="left")
+            self.terminBoxList[i].pack(side="right")
+            self.checkButtonList[i].pack(side="left")
+
+            self.L_huehnerList[i].pack(side="left", padx="5")
+            self.E_huehnerList[i].pack(side="left", padx="5")
+            self.L_PaidList[i].pack(side="left", padx="5")
+            self.CB_paidList[i].pack(side="left", padx="5")
+            self.checkBoxList[i].pack(side="top", fill="x")
+            i += 1
+
     def show(self):
+        self.refresh()
         self.lift()
         root.title("Hühnerliste - Termin hinzufügen - mehrere Besitzer")
 
