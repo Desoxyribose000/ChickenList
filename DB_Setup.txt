@@ -34,4 +34,4 @@ CREATE TABLE besitzer_impftermin(
 );
 
 Project Setup:
-in line 20 add Your #USERNAME#, #HOST#, #PASSWORD# and #DBNAME#
+in db_access line 16 add Your #USERNAME#, #HOST#, #PASSWORD# and #DBNAME#
