@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Autor: Max Nowak
-# Version: 0.2
+# Version: 0.3 wip
 # Programm for Manipulation of ChickenList DB
 # main Database Access
 
@@ -185,3 +185,76 @@ def add_termin_return_iid(datum: datetime, huehner: int, bezahlt: bool):
     connection.commit()
     iid = cur.fetchone()
     return iid[0]
+
+
+# alter a existing Owner
+# all arguments have to be given, if unknown vname or tel: give None
+def alter_owner(bid: int, nname: str, plz: str, ortsname: str, strassenname: str, hausnummer: str, vname: str = None,
+                tel: str = None):
+    try:  # Test values higher then database constraints
+        if (len(nname) > 255) | (len(plz) > 10) | (len(ortsname) > 255) | (len(strassenname) > 255) | (
+                len(hausnummer) > 10):
+            raise Exception("Wrong Valuesize")
+        if vname is not None:
+            if len(vname) > 255:
+                raise Exception("Wrong Valuesize")
+        if tel is not None:
+            if len(tel) > 255:
+                raise Exception("Wrong Valuesize")
+    except Exception as e:
+        print(e)
+        return -1
+
+    try:
+        # overloading for unknown vname and tel ( or combinations)
+        if (vname is not None) & (tel is not None):
+            cur.execute(f"""UPDATE besitzer
+                            SET vorname = %s,
+                            nachname = %s,
+                            plz = %s,
+                            ortsname = %s,
+                            strassenname = %s,
+                            hausnummer = %s,
+                            tel = %s
+                            WHERE BID = %s;""", [vname, nname, plz, ortsname, strassenname, hausnummer, tel, bid])
+            connection.commit()
+            return cur.fetchone()
+
+        if (vname is None) & (tel is not None):
+            cur.execute(f"""UPDATE besitzer
+                                    SET nachname = %s,
+                                    plz = %s,
+                                    ortsname = %s,
+                                    strassenname = %s,
+                                    hausnummer = %s,
+                                    tel = %s
+                                    WHERE BID = %s;""", [nname, plz, ortsname, strassenname, hausnummer, tel, bid])
+            connection.commit()
+            return cur.fetchone()
+
+        if (vname is not None) & (tel is None):
+            cur.execute(f"""UPDATE besitzer
+                                    SET vorname = %s,
+                                    nachname = %s,
+                                    plz = %s,
+                                    ortsname = %s,
+                                    strassenname = %s,
+                                    hausnummer = %s
+                                    WHERE BID = %s;""", [vname, nname, plz, ortsname, strassenname, hausnummer, bid])
+            connection.commit()
+            return cur.fetchone()
+
+        if (vname is None) & (tel is None):
+            cur.execute(f"""UPDATE besitzer
+                                    SET nachname = %s,
+                                    plz = %s,
+                                    ortsname = %s,
+                                    strassenname = %s,
+                                    hausnummer = %s
+                                    WHERE BID = %s;""", [nname, plz, ortsname, strassenname, hausnummer, bid])
+            connection.commit()
+            return cur.fetchone()
+        return 0
+    except Exception as e:
+        print(e)
+        return -1

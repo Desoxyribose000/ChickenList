@@ -5,18 +5,21 @@ Database Setup:
 CREATE SCHEMA chickenlist;
 SET SCHEMA 'chickenlist';
 
+--drop TABLE besitzer_impftermin;
+--drop TABLE impftermin;
+
+
 CREATE TABLE besitzer(
     BID         SERIAL PRIMARY KEY      NOT NULL,
-    vorname     char(50),
-    nachname    char(50)                NOT NULL,
-    plz         char(10)                NOT NULL,
-    ortsname    char(70)                NOT NULL,
-    strassenname char(70)               NOT NULL,
-    hausnummer  char(20)                NOT NULL,
-    tel         char(20)
+    vorname     varchar(50),
+    nachname    varchar(50)                NOT NULL,
+    plz         varchar(10)                NOT NULL,
+    ortsname    varchar(70)                NOT NULL,
+    strassenname varchar(70)               NOT NULL,
+    hausnummer  varchar(20)                NOT NULL,
+    tel         varchar(20)
 );
-drop TABLE besitzer_impftermin;
-drop TABLE impftermin;
+
 
 CREATE TABLE impftermin(
     IID     SERIAL     PRIMARY KEY     NOT NULL,

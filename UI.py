@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Autor: Max Nowak
-# Version: 0.2
+# Version: 0.3 wip
 # Programm for Manipulation of ChickenList DB
 # GUI Controller
 
@@ -830,6 +830,9 @@ class PageAddTerminMultiple(Page):
 
         self.owners = cur.fetchall()
 
+        if self.owners:
+            self.B_CommitButton.config(state="normal")
+
         for item in self.checkButtonBoxList:
             item.pack_forget()
 
@@ -1418,7 +1421,7 @@ class PageDeleteDate(Page):
         root.title("Hühnerliste - Termin löschen")
 
 
-# Page delete Owner - user can delete a
+# Page delete Owner - user can delete a owner
 class PageDeleteOwner(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
@@ -1624,6 +1627,586 @@ class PageDeleteOwner(Page):
         root.title("Hühnerliste - Besitzer löschen")
 
 
+# Page alter Owner - user can alter a owner
+class PageAlterOwner(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+
+        self.isSearch = False
+        self.isConfirm = False
+        self.isDistinct = None
+        self.Owners = None
+        self.Owner = None
+
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Besitzer löschen", font=55)
+        label.pack(fill="x", side="left")
+
+        self.searchBox = tk.Frame(master=self, borderwidth=2, relief="groove")
+        self.searchBox.pack(side="top", fill="x", padx="5", pady="5")
+
+        name_box = tk.Frame(master=self.searchBox)
+        name_box.pack(side="top", fill="x", pady=5)
+        tk.Label(name_box, text="Nachname: ").pack(side="left", padx="5")
+        self.entryNName = tk.Entry(name_box)
+        self.entryNName.pack(side="left", padx="5")
+
+        plz_box = tk.Frame(master=self.searchBox)
+        plz_box.pack(side="top", fill="x", pady=5)
+        tk.Label(plz_box, text="PLZ: ").pack(side="left", padx="5")
+        self.E_plz = tk.Entry(plz_box)
+        self.E_plz.pack(side="left", padx="43")
+
+        button_box = tk.Frame(master=self.searchBox)
+        button_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        button_search_button = tk.Button(button_box, text="Suche",
+                                         command=(lambda: self.search(self.entryNName.get(), self.E_plz.get())))
+        button_search_button.pack(side="left")
+        self.SearchStatusText = tk.StringVar()
+        self.SearchStatusText.set("")
+        label_state = tk.Label(button_box, textvariable=self.SearchStatusText)
+        label_state.pack(side="left", pady="5", padx="20")
+
+        self.confirmBox = tk.Frame(master=self.searchBox, borderwidth=2, relief="groove")
+        self.confirmLabelBox = tk.Frame(master=self.confirmBox)
+        self.L_confirmTitle = tk.Label(self.confirmLabelBox, text="")
+        self.confirmOwnersBox = tk.Frame(master=self.confirmBox)
+        self.confirmButtonBox = tk.Frame(master=self.confirmBox)
+        self.B_ConfirmButton = tk.Button(self.confirmButtonBox, text="Auswählen")
+
+        self.RadiobuttonBoxList = []
+        self.RadiobuttonList = []
+        self.choosenOwner = tk.IntVar()
+        self.choosenOwner.set(0)
+
+        alter_box = tk.Frame(master=self)
+        alter_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        verification_box = tk.Frame(master=alter_box)
+        verification_box.pack(side="top", fill="x", pady=5)
+        verification_label_box = tk.Frame(master=verification_box)
+        verification_label_box.pack(side="top", fill="x", pady=5)
+        tk.Label(verification_label_box, text="Besitzer: ").pack(side="left", padx="5")
+        self.VerificationLabelText = tk.StringVar()
+        self.VerificationLabelText.set("unbekannt")
+        label_owner = tk.Label(verification_label_box, textvariable=self.VerificationLabelText)
+        label_owner.pack(side="left", pady="10")
+
+        # Ownerdata I/O
+        owner_box = tk.Frame(master=self, borderwidth=2, relief="groove")
+        owner_box.pack(side="top", fill="x", padx="5",
+                       pady="5")
+
+        name_box = tk.Frame(owner_box)
+        name_box.pack(side="top", fill="x", pady=5)
+
+        vname_box = tk.Frame(name_box)
+        vname_box.pack(side="left", fill="x")
+        tk.Label(vname_box, text="Vorname").pack(side="left", padx="5")
+        self.entryVName = tk.Entry(vname_box, state='disabled')
+        self.entryVName.pack(side="left", padx="5")
+
+        nname_box = tk.Frame(name_box)
+        nname_box.pack(side="left", fill="x")
+        tk.Label(nname_box, text="Nachname *").pack(side="left", padx="5")
+        self.entryONName = tk.Entry(nname_box, state='disabled')
+        self.entryONName.pack(side="left", padx="5")
+
+        adress_box = tk.Frame(owner_box)
+        adress_box.pack(side="top", fill="x", pady=5)
+
+        plz_box = tk.Frame(adress_box)
+        plz_box.pack(side="left", fill="x")
+        tk.Label(plz_box, text="PLZ *").pack(side="left", padx="5")
+        self.entryPlz = tk.Entry(plz_box, state='disabled')
+        self.entryPlz.pack(side="left", padx="25")
+
+        ort_box = tk.Frame(adress_box)
+        ort_box.pack(side="left", fill="x")
+        tk.Label(ort_box, text="Ort *").pack(side="left", padx="5")
+        self.entryOrt = tk.Entry(ort_box, state='disabled')
+        self.entryOrt.pack(side="left", padx="25")
+
+        strasse_box = tk.Frame(adress_box)
+        strasse_box.pack(side="left", fill="x")
+        tk.Label(strasse_box, text="Strasse *").pack(side="left", padx="5")
+        self.entryStrasse = tk.Entry(strasse_box, state='disabled')
+        self.entryStrasse.pack(side="left", padx="5")
+
+        haus_box = tk.Frame(adress_box)
+        haus_box.pack(side="left", fill="x")
+        tk.Label(haus_box, text="Hausnummer *").pack(side="left", padx="5")
+        self.entryHaus = tk.Entry(haus_box, state='disabled')
+        self.entryHaus.pack(side="left", padx="5")
+
+        tel_box = tk.Frame(owner_box)
+        tel_box.pack(side="top", fill="x", pady=5)
+
+        tk.Label(tel_box, text="Telefonnummer").pack(side="left", padx="5")
+        self.entryTel = tk.Entry(tel_box, state='disabled')
+        self.entryTel.pack(side="left", padx="5")
+
+        button_box = tk.Frame(master=owner_box)
+        button_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        self.buttonSaveButton = tk.Button(button_box, text="Daten speichern", state='disabled',
+                                          command=(lambda: self.test_input()))
+        self.buttonSaveButton.pack(side="left")
+
+        status_box = tk.Frame(master=self)
+        status_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        self.StatusText = tk.StringVar()
+        label_state = tk.Label(status_box, textvariable=self.StatusText)
+        label_state.pack(side="left", pady="5")
+
+    def search(self, nachname: str, plz: str):
+        nachname = nachname.replace(" ", "")
+        plz = plz.replace(" ", "")
+
+        cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
+                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
+        connection.commit()
+        self.Owners = cur.fetchall()
+
+        self.entryVName.config(state='disabled')
+        self.entryONName.config(state='disabled')
+        self.entryHaus.config(state='disabled')
+        self.entryOrt.config(state='disabled')
+        self.entryPlz.config(state='disabled')
+        self.entryStrasse.config(state='disabled')
+        self.entryTel.config(state='disabled')
+        self.buttonSaveButton.config(state='disabled')
+
+        if not self.Owners:
+            self.confirmBox.pack_forget()
+            self.confirmLabelBox.pack_forget()
+            self.L_confirmTitle.pack_forget()
+            self.confirmOwnersBox.pack_forget()
+            self.B_ConfirmButton.pack_forget()
+            self.confirmButtonBox.pack_forget()
+
+            for RadiobuttonBox in self.RadiobuttonBoxList:
+                RadiobuttonBox.pack_forget()
+
+            for Radiobutton in self.RadiobuttonList:
+                Radiobutton.pack_forget()
+            self.SearchStatusText.set(
+                "Es ist ein Fehler aufgetreten! Bitte prüfe deine Eingabe und versuche es nochmal")
+        else:
+            self.SearchStatusText.set("Got: " + str(self.Owners))
+
+            if len(self.Owners) > 1:
+                self.isDistinct = False
+            if len(self.Owners) == 1:
+                self.isDistinct = True
+            if self.isDistinct is not None:
+                self.isSearch = True
+
+            if not self.isDistinct:
+                self.confirmBox.pack_forget()
+                self.confirmLabelBox.pack_forget()
+                self.L_confirmTitle.pack_forget()
+                self.confirmOwnersBox.pack_forget()
+                self.B_ConfirmButton.pack_forget()
+                self.confirmButtonBox.pack_forget()
+
+                self.L_confirmTitle.config(text=str(len(self.Owners)) + " Besitzer gefunden:")
+
+                self.confirmBox.pack(side="top", fill="x", padx="5", pady="5")
+                self.confirmLabelBox.pack(side="top", fill="x", pady="5")
+                self.L_confirmTitle.pack(side="left", padx="5")
+                self.confirmOwnersBox.pack(side="top", fill="x", pady="5")
+
+                for RadiobuttonBox in self.RadiobuttonBoxList:
+                    RadiobuttonBox.pack_forget()
+
+                for Radiobutton in self.RadiobuttonList:
+                    Radiobutton.pack_forget()
+
+                self.RadiobuttonBoxList = []
+                self.RadiobuttonList = []
+                self.choosenOwner = tk.IntVar()
+                self.choosenOwner.set(0)
+
+                i = 0
+                for Owner in self.Owners:
+                    self.RadiobuttonBoxList.append(tk.Frame(master=self.confirmOwnersBox))
+                    self.RadiobuttonList.append(tk.Radiobutton(master=self.RadiobuttonBoxList[i], text=str(Owner),
+                                                               variable=self.choosenOwner,
+                                                               value=i))
+                    self.RadiobuttonBoxList[i].pack(side="top", fill="x", pady="5")
+                    self.RadiobuttonList[i].pack(side="left", padx="5")
+                    i += 1
+
+                self.B_ConfirmButton.configure(command=lambda: self.confirm(self.Owners[self.choosenOwner.get()]))
+                self.confirmButtonBox.pack(side="top", fill="x", pady="5")
+                self.B_ConfirmButton.pack(side="left", padx="5")
+            else:
+                self.confirm(self.Owners[0])
+                self.confirmBox.pack_forget()
+                self.confirmLabelBox.pack_forget()
+                self.L_confirmTitle.pack_forget()
+                self.confirmOwnersBox.pack_forget()
+                self.B_ConfirmButton.pack_forget()
+                self.confirmButtonBox.pack_forget()
+                for RadiobuttonBox in self.RadiobuttonBoxList:
+                    RadiobuttonBox.pack_forget()
+
+                for Radiobutton in self.RadiobuttonList:
+                    Radiobutton.pack_forget()
+
+                self.entryVName.config(state='normal')
+                self.entryONName.config(state='normal')
+                self.entryHaus.config(state='normal')
+                self.entryOrt.config(state='normal')
+                self.entryPlz.config(state='normal')
+                self.entryStrasse.config(state='normal')
+                self.entryTel.config(state='normal')
+                self.buttonSaveButton.config(state='normal')
+
+                self.entryVName.delete(0, 'end')
+                self.entryONName.delete(0, 'end')
+                self.entryHaus.delete(0, 'end')
+                self.entryOrt.delete(0, 'end')
+                self.entryPlz.delete(0, 'end')
+                self.entryStrasse.delete(0, 'end')
+                self.entryTel.delete(0, 'end')
+
+                self.entryVName.insert(0, self.Owner[1])
+                self.entryONName.insert(0, self.Owner[2])
+                self.entryPlz.insert(0, self.Owner[3])
+                self.entryOrt.insert(0, self.Owner[4])
+                self.entryStrasse.insert(0, self.Owner[5])
+                self.entryHaus.insert(0, self.Owner[6])
+                self.entryTel.insert(0, self.Owner[7])
+
+    def confirm(self, owner):
+        self.Owner = owner
+        self.isConfirm = True
+        # self.B_deleteOwner.config(state="normal")
+        self.VerificationLabelText.set(str(self.Owner[0]) + ": " + str(self.Owner[1]) + " " + str(self.Owner[2]) + ": " +
+                                str(self.Owner[3]) + " " + str(self.Owner[4]) + " " + str(self.Owner[5]) + " " +
+                                str(self.Owner[6]) + " - " + str(self.Owner[7]))
+        self.entryVName.config(state='normal')
+        self.entryONName.config(state='normal')
+        self.entryHaus.config(state='normal')
+        self.entryOrt.config(state='normal')
+        self.entryPlz.config(state='normal')
+        self.entryStrasse.config(state='normal')
+        self.entryTel.config(state='normal')
+        self.buttonSaveButton.config(state='normal')
+
+        self.entryVName.delete(0, 'end')
+        self.entryONName.delete(0, 'end')
+        self.entryHaus.delete(0, 'end')
+        self.entryOrt.delete(0, 'end')
+        self.entryPlz.delete(0, 'end')
+        self.entryStrasse.delete(0, 'end')
+        self.entryTel.delete(0, 'end')
+
+        self.entryVName.insert(0, self.Owner[1])
+        self.entryONName.insert(0, self.Owner[2])
+        self.entryPlz.insert(0, self.Owner[3])
+        self.entryOrt.insert(0, self.Owner[4])
+        self.entryStrasse.insert(0, self.Owner[5])
+        self.entryHaus.insert(0, self.Owner[6])
+        self.entryTel.insert(0, self.Owner[7])
+
+    def test_input(self):
+        valid_input = True
+
+        plz = self.entryPlz.get()
+        plz = plz.replace(" ", "")
+        if not (plz.isnumeric()):
+            valid_input = False
+
+        if len(self.entryTel.get()) > 0:
+            tel = self.entryTel.get()
+            tel = tel.replace(" ", "")
+            if not (tel.isnumeric()):
+                valid_input = False
+
+        entry_list = [self.entryONName, self.entryPlz, self.entryOrt, self.entryStrasse, self.entryHaus]
+
+        is_empty = False
+        for Entry in entry_list:
+            if len(Entry.get()) == 0:
+                is_empty = True
+        if is_empty:
+            self.StatusText.set("Bitte fülle alle Pflichtfelder und achte auf sinnvolle Eingaben!")
+            valid_input = False
+
+        if valid_input:
+            success = dba.alter_owner(self.Owner[0], self.entryONName.get().replace(" ", ""),
+                            self.entryPlz.get().replace(" ", ""), self.entryOrt.get().replace(" ", ""),
+                            self.entryStrasse.get().replace(" ", ""), self.entryHaus.get().replace(" ", ""),
+                            self.entryVName.get().replace(" ", ""), self.entryTel.get().replace(" ", ""))
+
+            if success:
+                self.StatusText.set("Erfolgreich geändert!")
+            else:
+                self.StatusText.set("Fehler beim ändern aufgetreten!")
+
+        else:
+            self.StatusText.set("Bitte fülle alle Pflichtfelder und achte auf sinnvolle Eingaben!")
+
+    def show(self):
+        self.lift()
+        root.title("Hühnerliste - Besitzer löschen")
+
+
+# Page alter Termin - user can alter a appointment for a choosen owner
+class PageAlterDate(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+
+        self.isSearch = False
+        self.isConfirm = False
+        self.isDistinct = None
+        self.Owners = None
+        self.Owner = None
+
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Termin eines Besitzers löschen", font=55)
+        label.pack(fill="x", side="left")
+
+        self.searchBox = tk.Frame(master=self, borderwidth=2, relief="groove")
+        self.searchBox.pack(side="top", fill="x", padx="5", pady="5")
+
+        name_box = tk.Frame(master=self.searchBox)
+        name_box.pack(side="top", fill="x", pady=5)
+        tk.Label(name_box, text="Nachname: ").pack(side="left", padx="5")
+        self.E_nname = tk.Entry(name_box)
+        self.E_nname.pack(side="left", padx="5")
+
+        plz_box = tk.Frame(master=self.searchBox)
+        plz_box.pack(side="top", fill="x", pady=5)
+        tk.Label(plz_box, text="PLZ: ").pack(side="left", padx="5")
+        self.E_plz = tk.Entry(plz_box)
+        self.E_plz.pack(side="left", padx="43")
+
+        button_box = tk.Frame(master=self.searchBox)
+        button_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        button_search_button = tk.Button(button_box, text="Suche",
+                                         command=(lambda: self.search(self.E_nname.get(), self.E_plz.get())))
+        button_search_button.pack(side="left")
+        self.SearchStatusText = tk.StringVar()
+        self.SearchStatusText.set("")
+        label_state = tk.Label(button_box, textvariable=self.SearchStatusText)
+        label_state.pack(side="left", pady="5", padx="20")
+
+        self.confirmBox = tk.Frame(master=self.searchBox, borderwidth=2, relief="groove")
+        self.confirmLabelBox = tk.Frame(master=self.confirmBox)
+        self.L_confirmTitle = tk.Label(self.confirmLabelBox, text="")
+        self.confirmOwnersBox = tk.Frame(master=self.confirmBox)
+        self.confirmButtonBox = tk.Frame(master=self.confirmBox)
+        self.B_ConfirmButton = tk.Button(self.confirmButtonBox, text="Auswählen")
+
+        self.RadiobuttonBoxList = []
+        self.RadiobuttonList = []
+        self.choosenOwner = tk.IntVar()
+        self.choosenOwner.set(0)
+
+        self.TerminBox = tk.Frame(master=self)
+        self.TerminBox.pack(side="top", fill="x", padx="5", pady="5")
+
+        owner_box = tk.Frame(master=self.TerminBox)
+        owner_box.pack(side="top", fill="x", pady=5)
+        owner_label_box = tk.Frame(master=owner_box)
+        owner_label_box.pack(side="top", fill="x", pady=5)
+        tk.Label(owner_label_box, text="Besitzer: ").pack(side="left", padx="5")
+        self.OwnerLabelText = tk.StringVar()
+        self.OwnerLabelText.set("unbekannt")
+        label_owner = tk.Label(owner_label_box, textvariable=self.OwnerLabelText)
+        label_owner.pack(side="left", pady="10")
+
+        self.TerminRadiobuttonBoxList = []
+        self.TerminRadiobuttonList = []
+        self.Termine = []
+        self.choosenTermin = tk.IntVar()
+        self.choosenTermin.set(0)
+
+        deletion_button_box = tk.Frame(master=self.TerminBox)
+        deletion_button_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        self.B_deleteDate = tk.Button(deletion_button_box, text="Termin löschen!",
+                                      command=(lambda: self.delete_date(self.Termine[self.choosenTermin.get()][0])))
+        self.B_deleteDate.config(state="disabled")
+        self.B_deleteDate.pack(side="left")
+
+        status_box = tk.Frame(master=self.TerminBox)
+        status_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        self.StatusText = tk.StringVar()
+        label_state = tk.Label(status_box, textvariable=self.StatusText)
+        label_state.pack(side="left", pady="5")
+
+    def delete_date(self, iid):
+        cur.execute("""DELETE FROM besitzer_impftermin
+                                WHERE iid = %s;""", [iid])
+        connection.commit()
+        cur.execute("""DELETE FROM impftermin
+                        WHERE iid = %s;""", [iid])
+        connection.commit()
+        self.B_deleteDate.config(state="disabled")
+        self.StatusText.set("Termin Nummer " + str(iid) + " gelöscht!")
+        self.print_termin(self.Owner[0])
+
+    def print_termin(self, bid):
+        cur.execute("""Select * FROM impftermin
+                        JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
+                        WHERE bi.BID = %s
+                        ORDER BY datum,anzahlhuehner;""", [bid])
+        connection.commit()
+
+        self.Termine = cur.fetchall()
+
+        if self.Termine:
+            for TerminRadiobuttonBox in self.TerminRadiobuttonBoxList:
+                TerminRadiobuttonBox.pack_forget()
+
+            for TerminRadiobutton in self.TerminRadiobuttonList:
+                TerminRadiobutton.pack_forget()
+
+            self.TerminRadiobuttonBoxList = []
+            self.TerminRadiobuttonList = []
+            self.choosenTermin = tk.IntVar()
+            self.choosenTermin.set(0)
+            self.B_deleteDate.config(state="normal")
+
+            i = 0
+            for Termin in self.Termine:
+                self.TerminRadiobuttonBoxList.append(tk.Frame(master=self.TerminBox))
+                self.TerminRadiobuttonList.append(tk.Radiobutton(master=self.TerminRadiobuttonBoxList[i],
+                                                                 text=Termin[1].strftime("%d.%m.%Y") + ": " +
+                                                                 str(Termin[2]) +
+                                                                 " Hühner, bezahlt: " +
+                                                                 str(Termin[3]).replace("True", "Ja").replace("False",
+                                                                                                              "Nein"),
+                                                                 variable=self.choosenTermin,
+                                                                 value=i))
+                self.TerminRadiobuttonBoxList[i].pack(side="top", fill="x", pady="5")
+                self.TerminRadiobuttonList[i].pack(side="left", padx="5")
+                i += 1
+        else:
+            for TerminRadiobuttonBox in self.TerminRadiobuttonBoxList:
+                TerminRadiobuttonBox.pack_forget()
+
+            for TerminRadiobutton in self.TerminRadiobuttonList:
+                TerminRadiobutton.pack_forget()
+
+            self.TerminRadiobuttonBoxList = []
+            self.TerminRadiobuttonList = []
+            self.choosenTermin = tk.IntVar()
+            self.choosenTermin.set(0)
+            self.B_deleteDate.config(state="disabled")
+            self.StatusText.set("Für diesen Besitzer wurden leider keine Termine gefunden!")
+
+    def search(self, nachname: str, plz: str):
+        nachname = nachname.replace(" ", "")
+        plz = plz.replace(" ", "")
+
+        cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
+                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
+        connection.commit()
+        self.Owners = cur.fetchall()
+
+        if not self.Owners:
+            self.confirmBox.pack_forget()
+            self.confirmLabelBox.pack_forget()
+            self.L_confirmTitle.pack_forget()
+            self.confirmOwnersBox.pack_forget()
+            self.B_ConfirmButton.pack_forget()
+            self.confirmButtonBox.pack_forget()
+
+            for RadiobuttonBox in self.RadiobuttonBoxList:
+                RadiobuttonBox.pack_forget()
+
+            for Radiobutton in self.RadiobuttonList:
+                Radiobutton.pack_forget()
+            self.SearchStatusText.set(
+                "Es ist ein Fehler aufgetreten! Bitte prüfe deine Eingabe und versuche es nochmal")
+        else:
+            self.SearchStatusText.set("Got: " + str(self.Owners))
+
+            if len(self.Owners) > 1:
+                self.isDistinct = False
+            if len(self.Owners) == 1:
+                self.isDistinct = True
+            if self.isDistinct is not None:
+                self.isSearch = True
+
+            if not self.isDistinct:
+                self.confirmBox.pack_forget()
+                self.confirmLabelBox.pack_forget()
+                self.L_confirmTitle.pack_forget()
+                self.confirmOwnersBox.pack_forget()
+                self.B_ConfirmButton.pack_forget()
+                self.confirmButtonBox.pack_forget()
+
+                self.L_confirmTitle.config(text=str(len(self.Owners)) + " Besitzer gefunden:")
+
+                self.confirmBox.pack(side="top", fill="x", padx="5", pady="5")
+                self.confirmLabelBox.pack(side="top", fill="x", pady="5")
+                self.L_confirmTitle.pack(side="left", padx="5")
+                self.confirmOwnersBox.pack(side="top", fill="x", pady="5")
+
+                for RadiobuttonBox in self.RadiobuttonBoxList:
+                    RadiobuttonBox.pack_forget()
+
+                for Radiobutton in self.RadiobuttonList:
+                    Radiobutton.pack_forget()
+
+                self.RadiobuttonBoxList = []
+                self.RadiobuttonList = []
+                self.choosenOwner = tk.IntVar()
+                self.choosenOwner.set(0)
+
+                i = 0
+                for Owner in self.Owners:
+                    self.RadiobuttonBoxList.append(tk.Frame(master=self.confirmOwnersBox))
+                    self.RadiobuttonList.append(tk.Radiobutton(master=self.RadiobuttonBoxList[i], text=str(Owner),
+                                                               variable=self.choosenOwner,
+                                                               value=i))
+                    self.RadiobuttonBoxList[i].pack(side="top", fill="x", pady="5")
+                    self.RadiobuttonList[i].pack(side="left", padx="5")
+                    i += 1
+
+                self.B_ConfirmButton.configure(command=lambda: self.confirm(self.Owners[self.choosenOwner.get()]))
+                self.confirmButtonBox.pack(side="top", fill="x", pady="5")
+                self.B_ConfirmButton.pack(side="left", padx="5")
+            else:
+                self.confirm(self.Owners[0])
+                self.confirmBox.pack_forget()
+                self.confirmLabelBox.pack_forget()
+                self.L_confirmTitle.pack_forget()
+                self.confirmOwnersBox.pack_forget()
+                self.B_ConfirmButton.pack_forget()
+                self.confirmButtonBox.pack_forget()
+                for RadiobuttonBox in self.RadiobuttonBoxList:
+                    RadiobuttonBox.pack_forget()
+
+                for Radiobutton in self.RadiobuttonList:
+                    Radiobutton.pack_forget()
+
+    def confirm(self, owner):
+        self.Owner = owner
+        self.isConfirm = True
+        self.B_deleteDate.config(state="normal")
+        self.print_termin(owner[0])
+        self.OwnerLabelText.set(str(self.Owner[1]) + " " + str(self.Owner[2]) + ": " +
+                                str(self.Owner[3]) + " " + str(self.Owner[4]) + " " + str(self.Owner[5]) + " " +
+                                str(self.Owner[6]) + " - " + str(self.Owner[7]))
+
+    def show(self):
+        self.lift()
+        root.title("Hühnerliste - Termin löschen")
+
 # Content Frame with Menu
 class MainView(tk.Frame):
     def __init__(self, *args, **kwargs):
@@ -1637,6 +2220,8 @@ class MainView(tk.Frame):
         page_confirm = PageConfirmPayment(self)
         page_delete_date = PageDeleteDate(self)
         page_delete_owner = PageDeleteOwner(self)
+        page_alter_owner = PageAlterOwner(self)
+        page_alter_date = PageAlterDate(self)
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -1648,6 +2233,8 @@ class MainView(tk.Frame):
         page_confirm.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         page_delete_date.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         page_delete_owner.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_alter_owner.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_alter_date.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
         # Menu for changing pages
         menu = tk.Menu(root)
@@ -1666,6 +2253,12 @@ class MainView(tk.Frame):
         addmenu.add_cascade(label="Termin hinzufügen", menu=terminmenu)
         terminmenu.add_command(label="Ein Besitzer", command=page_termin_one.show)
         terminmenu.add_command(label="Mehrere Besitzer", command=page_termin_multiple.show)
+        pagemenu.add_separator()
+
+        altermenu = tk.Menu(pagemenu, tearoff=0)
+        pagemenu.add_cascade(label="Ändern", menu=altermenu)
+        altermenu.add_command(label="Besitzerdaten ändern", command=page_alter_owner.show)
+        altermenu.add_command(label="Termindaten ändern", command=page_alter_date.show)
         pagemenu.add_separator()
 
         deletemenu = tk.Menu(pagemenu, tearoff=0)
