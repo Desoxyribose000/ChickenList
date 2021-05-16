@@ -258,3 +258,19 @@ def alter_owner(bid: int, nname: str, plz: str, ortsname: str, strassenname: str
     except Exception as e:
         print(e)
         return -1
+
+
+# alter a existing termin
+def alter_termin(iid: int, datum: datetime, huehner: int, bezahlt: bool):
+    try:
+        cur.execute("""UPDATE impftermin
+                                SET datum = %s,
+                                    anzahlhuehner = %s,
+                                    bezahlt = %s
+                                WHERE IID = %s;""", [datum, huehner, bezahlt, iid])
+        connection.commit()
+
+        return 1
+    except Exception as e:
+        print(e)
+        return 0
