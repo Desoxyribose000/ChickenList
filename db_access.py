@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Autor: Max Nowak
-# Version: 0.4 wip - PDF Generation
+# Version: 0.5 wip - Cloud Access
 # Programm for Manipulation of ChickenList DB
 # main Database Access
 
@@ -10,10 +10,18 @@ import xlwt
 from tkinter import messagebox as msg
 from datetime import datetime
 
+import os
+
 # establish connection with db // creating db
 
 # for use with postgress
-connection = psycopg2.connect("user=postgres host=localhost password=hC_pGSWYz-b-s762 dbname=postgres")
+
+username = os.environ['DBUSER']
+hostname = os.environ['DBHOST']
+password = os.environ['DBPASSWD']
+name = os.environ['DBNAME']
+
+connection = psycopg2.connect(f"user={username} host={hostname} password={password} dbname={name}")
 
 cur = connection.cursor()
 cur.execute("""SET SCHEMA 'chickenlist';""")

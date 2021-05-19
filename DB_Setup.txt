@@ -37,4 +37,4 @@ CREATE TABLE besitzer_impftermin(
 );
 
 Project Setup:
-in db_access line 16 add Your #USERNAME#, #HOST#, #PASSWORD# and #DBNAME#
+Setup the 4 environment variables DBUSER, DBHOST, DBPASSWD, DBNAME
