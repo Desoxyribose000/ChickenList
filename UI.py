@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Autor: Max Nowak
-# Version: 0.3 wip
+# Version: 0.4 wip - PDF Generation
 # Programm for Manipulation of ChickenList DB
 # GUI Controller
 
@@ -13,9 +13,11 @@ from tkinter import ttk
 from tkinter import messagebox as msg
 from datetime import datetime
 
-from db_access import cur
-from db_access import connection
 import db_access as dba
+
+import pdf
+
+import qr
 
 
 # GUI
@@ -306,21 +308,7 @@ class PageOwner(Page):
 
             iid = dba.add_termin_return_iid(termin_dict['Datum'], termin_dict['Huehner'], termin_dict['bezahlt'])
 
-            # cur.execute("""SELECT bid FROM besitzer WHERE nachname=%s and plz=%s and ortsname=%s and strassenname=%s
-            # and
-            #                 hausnummer=%s""",[OwnerDict['Nachname'], OwnerDict['PLZ'], OwnerDict['Ort'],
-            #                                   OwnerDict['Strasse'], OwnerDict['Hausnummer']])
-            # connection.commit()
-            # BID = cur.fetchone()
-
-            # cur.execute("""SELECT iid FROM impftermin WHERE datum=%s and anzahlhuehner=%s and bezahlt=%s""",
-            #                 [TerminDict['Datum'],TerminDict['Huehner'],TerminDict['bezahlt']])
-            # connection.commit()
-            # IID = cur.fetchone()
-
-            cur.execute("""INSERT INTO besitzer_impftermin (BID, IID) VALUES (%s,%s);""",
-                        [bid, iid])
-            connection.commit()
+            dba.commit_termine(bid, iid)
 
             self.StatusText.set("Besitzer " + str(owner_dict) + " wurde hinzugefügt!\n" +
                                 "Termin " + str(termin_dict) + " wurde hinzugefügt!\n" +
@@ -507,9 +495,7 @@ class PageAddTerminOne(Page):
 
     def commit_termin(self, bid, termin_dict):
         iid = dba.add_termin_return_iid(termin_dict['Datum'], termin_dict['Huehner'], termin_dict['bezahlt'])
-        cur.execute("""INSERT INTO besitzer_impftermin (BID, IID) VALUES (%s,%s);""",
-                    [bid, iid])
-        connection.commit()
+        dba.commit_termine(bid, iid)
 
         self.StatusText.set("Termin " + str(termin_dict) + " wurde hinzugefügt!\n" +
                             "Besitzer " + str(bid) + " und Termin " + str(iid) + " wurde assoziert!")
@@ -518,10 +504,7 @@ class PageAddTerminOne(Page):
         nachname = nachname.replace(" ", "")
         plz = plz.replace(" ", "")
 
-        cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
-        connection.commit()
-        self.Owners = cur.fetchall()
+        self.Owners = dba.search(nachname, plz)
 
         if not self.Owners:
             self.confirmBox.pack_forget()
@@ -621,11 +604,7 @@ class PageAddTerminMultiple(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
-        cur.execute("""SELECT * FROM besitzer
-                               ORDER BY nachname,vorname;""")
-        connection.commit()
-
-        self.owners = cur.fetchall()
+        self.owners = dba.refresh()
 
         label_box = tk.Frame(master=self)
         label_box.pack(side="top", fill="x", padx="5", pady="5")
@@ -774,9 +753,7 @@ class PageAddTerminMultiple(Page):
         for entry in data:
             iid = str(dba.add_termin_return_iid(datum, entry[1], bool(entry[2])))
             bid = str(entry[0])
-            cur.execute("""INSERT INTO besitzer_impftermin (BID, IID)
-                            VALUES (%s,%s);""", [bid, iid])
-            connection.commit()
+            dba.commit_termine(bid, iid)
             status_text = self.StatusText.get()
             self.StatusText.set(status_text + "\n" + "Besitzer Nr.: " + bid + " wurde ein Termin am " +
                                 datetime.strftime(datum, "%d.%m.%Y") + " für " +
@@ -824,11 +801,7 @@ class PageAddTerminMultiple(Page):
 
     def refresh(self):
 
-        cur.execute("""SELECT * FROM besitzer
-                                       ORDER BY nachname,vorname;""")
-        connection.commit()
-
-        self.owners = cur.fetchall()
+        self.owners = dba.refresh()
 
         if self.owners:
             self.B_CommitButton.config(state="normal")
@@ -999,31 +972,19 @@ class PageConfirmPayment(Page):
         label_state.pack(side="left", pady="5")
 
     def has_paid(self, iid):
-        cur.execute("""UPDATE impftermin
-                        SET bezahlt = true
-                        WHERE iid = %s;""", [iid])
-        connection.commit()
+        dba.has_paid(iid)
         self.StatusText.set(self.Owner[2] + " " + self.Owner[1] + " hat bezahlt für den Termin am "
                             + datetime.strftime(self.Termine[self.choosenTermin.get()][1], "%d.%m.%Y"))
         self.print_termin(self.Owner[0])
 
     def has_not_paid(self, iid):
-        cur.execute("""UPDATE impftermin
-                                SET bezahlt = false
-                                WHERE iid = %s;""", [iid])
-        connection.commit()
+        dba.has_not_paid(iid)
         self.StatusText.set(self.Owner[2] + " " + self.Owner[1] + " hat NICHT bezahlt für den Termin am "
                             + datetime.strftime(self.Termine[self.choosenTermin.get()][1], "%d.%m.%Y"))
         self.print_termin(self.Owner[0])
 
-    def print_termin(self, iid):
-        cur.execute("""Select * FROM impftermin
-                        JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
-                        WHERE bi.BID = %s
-                        ORDER BY datum,anzahlhuehner;""", [iid])
-        connection.commit()
-
-        self.Termine = cur.fetchall()
+    def print_termin(self, bid):
+        self.Termine = dba.print_termin(bid)
 
         if self.Termine:
             for TerminRadiobuttonBox in self.TerminRadiobuttonBoxList:
@@ -1072,10 +1033,7 @@ class PageConfirmPayment(Page):
         nachname = nachname.replace(" ", "")
         plz = plz.replace(" ", "")
 
-        cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
-        connection.commit()
-        self.Owners = cur.fetchall()
+        self.Owners = dba.search(nachname, plz)
 
         if not self.Owners:
             self.confirmBox.pack_forget()
@@ -1259,24 +1217,13 @@ class PageDeleteDate(Page):
         label_state.pack(side="left", pady="5")
 
     def delete_date(self, iid):
-        cur.execute("""DELETE FROM besitzer_impftermin
-                                WHERE iid = %s;""", [iid])
-        connection.commit()
-        cur.execute("""DELETE FROM impftermin
-                        WHERE iid = %s;""", [iid])
-        connection.commit()
+        dba.delete_date(iid)
         self.B_deleteDate.config(state="disabled")
         self.StatusText.set("Termin Nummer " + str(iid) + " gelöscht!")
         self.print_termin(self.Owner[0])
 
     def print_termin(self, bid):
-        cur.execute("""Select * FROM impftermin
-                        JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
-                        WHERE bi.BID = %s
-                        ORDER BY datum,anzahlhuehner;""", [bid])
-        connection.commit()
-
-        self.Termine = cur.fetchall()
+        self.Termine = dba.print_termin(bid)
 
         if self.Termine:
             for TerminRadiobuttonBox in self.TerminRadiobuttonBoxList:
@@ -1323,10 +1270,7 @@ class PageDeleteDate(Page):
         nachname = nachname.replace(" ", "")
         plz = plz.replace(" ", "")
 
-        cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
-        connection.commit()
-        self.Owners = cur.fetchall()
+        self.Owners = dba.search(nachname, plz)
 
         if not self.Owners:
             self.confirmBox.pack_forget()
@@ -1503,24 +1447,7 @@ class PageDeleteOwner(Page):
         label_state.pack(side="left", pady="5")
 
     def delete_owner(self, bid):
-        cur.execute("""SELECT impftermin.IID FROM impftermin
-                        JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
-                        JOIN besitzer b on b.BID = bi.BID
-                        WHERE b.BID = %s;""", [bid])
-        connection.commit()
-        iids = cur.fetchall()
-
-        for IID in iids:
-            cur.execute("""DELETE FROM besitzer_impftermin
-                                            WHERE iid = %s;""", [IID])
-            connection.commit()
-            cur.execute("""DELETE FROM impftermin
-                                            WHERE iid = %s;""", [IID])
-            connection.commit()
-
-        cur.execute("""DELETE FROM besitzer
-                                WHERE bid = %s;""", [bid])
-        connection.commit()
+        dba.delete_owner(bid)
 
         self.B_deleteOwner.config(state="disabled")
         self.StatusText.set("Besitzer Nummer " + str(bid) + " mit allen Terminen gelöscht!")
@@ -1530,10 +1457,7 @@ class PageDeleteOwner(Page):
         nachname = nachname.replace(" ", "")
         plz = plz.replace(" ", "")
 
-        cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
-        connection.commit()
-        self.Owners = cur.fetchall()
+        self.Owners = dba.search(nachname, plz)
 
         if not self.Owners:
             self.confirmBox.pack_forget()
@@ -1765,10 +1689,7 @@ class PageAlterOwner(Page):
         nachname = nachname.replace(" ", "")
         plz = plz.replace(" ", "")
 
-        cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
-        connection.commit()
-        self.Owners = cur.fetchall()
+        self.Owners = dba.search(nachname, plz)
 
         self.entryVName.config(state='disabled')
         self.entryONName.config(state='disabled')
@@ -2060,10 +1981,7 @@ class PageAlterDate(Page):
         nachname = nachname.replace(" ", "")
         plz = plz.replace(" ", "")
 
-        cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
-                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
-        connection.commit()
-        self.Owners = cur.fetchall()
+        self.Owners = dba.search(nachname, plz)
 
         if not self.Owners:
             self.confirmBox.pack_forget()
@@ -2148,13 +2066,7 @@ class PageAlterDate(Page):
         # get all dates for choosen owner given by its bid
         # for each date create a new interactive line
 
-        cur.execute("""Select * FROM impftermin
-                        JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
-                        WHERE bi.BID = %s
-                        ORDER BY datum,anzahlhuehner;""", [bid])
-        connection.commit()
-
-        self.Termine = cur.fetchall()
+        self.Termine = dba.print_termin(bid)
 
         if self.Termine:
             self.StatusText.set("")
@@ -2316,6 +2228,248 @@ class PageAlterDate(Page):
         root.title("Hühnerliste - Impftermin ändern")
 
 
+# Page delete Owner - user can delete a owner
+class PagePrintPDF(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+
+        self.isSearch = False
+        self.isConfirm = False
+        self.isDistinct = None
+        self.Owners = None
+        self.Owner = None
+
+        label_box = tk.Frame(master=self)
+        label_box.pack(side="top", fill="x", padx="5", pady="5")
+        label = tk.Label(label_box, text="Impfnachweis erstellen", font=55)
+        label.pack(fill="x", side="left")
+
+        self.searchBox = tk.Frame(master=self, borderwidth=2, relief="groove")
+        self.searchBox.pack(side="top", fill="x", padx="5", pady="5")
+
+        name_box = tk.Frame(master=self.searchBox)
+        name_box.pack(side="top", fill="x", pady=5)
+        tk.Label(name_box, text="Nachname: ").pack(side="left", padx="5")
+        self.E_nname = tk.Entry(name_box)
+        self.E_nname.pack(side="left", padx="5")
+
+        plz_box = tk.Frame(master=self.searchBox)
+        plz_box.pack(side="top", fill="x", pady=5)
+        tk.Label(plz_box, text="PLZ: ").pack(side="left", padx="5")
+        self.E_plz = tk.Entry(plz_box)
+        self.E_plz.pack(side="left", padx="43")
+
+        button_box = tk.Frame(master=self.searchBox)
+        button_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        button_search_button = tk.Button(button_box, text="Suche",
+                                         command=(lambda: self.search(self.E_nname.get(), self.E_plz.get())))
+        button_search_button.pack(side="left")
+        self.SearchStatusText = tk.StringVar()
+        self.SearchStatusText.set("")
+        label_state = tk.Label(button_box, textvariable=self.SearchStatusText)
+        label_state.pack(side="left", pady="5", padx="20")
+
+        self.confirmBox = tk.Frame(master=self.searchBox, borderwidth=2, relief="groove")
+        self.confirmLabelBox = tk.Frame(master=self.confirmBox)
+        self.L_confirmTitle = tk.Label(self.confirmLabelBox, text="")
+        self.confirmOwnersBox = tk.Frame(master=self.confirmBox)
+        self.confirmButtonBox = tk.Frame(master=self.confirmBox)
+        self.B_ConfirmButton = tk.Button(self.confirmButtonBox, text="Auswählen")
+
+        self.RadiobuttonBoxList = []
+        self.RadiobuttonList = []
+        self.choosenOwner = tk.IntVar()
+        self.choosenOwner.set(0)
+
+        ver_box = tk.Frame(master=self)
+        ver_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        owner_box = tk.Frame(master=ver_box)
+        owner_box.pack(side="top", fill="x", pady=5)
+        owner_label_box = tk.Frame(master=owner_box)
+        owner_label_box.pack(side="top", fill="x", pady=5)
+        tk.Label(owner_label_box, text="Besitzer: ").pack(side="left", padx="5")
+        self.OwnerLabelText = tk.StringVar()
+        self.OwnerLabelText.set("unbekannt")
+        label_owner = tk.Label(owner_label_box, textvariable=self.OwnerLabelText)
+        label_owner.pack(side="left", pady="10")
+
+        create_ver_button_box = tk.Frame(master=ver_box)
+        create_ver_button_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        self.B_createVer = tk.Button(create_ver_button_box, text="Nachweis erstellen!",
+                                       command=(lambda: self.create_verification(self.Owner)))
+        self.B_createVer.config(state="disabled")
+        self.B_createVer.pack(side="left")
+
+        self.B_createOwnerVer = tk.Button(create_ver_button_box, text="Besitzer Version erstellen!",
+                                     command=(lambda: self.create_owner_version(self.Owner)))
+        self.B_createOwnerVer.config(state="disabled")
+        self.B_createOwnerVer.pack(side="left", padx="5")
+
+        status_box = tk.Frame(master=ver_box)
+        status_box.pack(side="top", fill="x", padx="5", pady="5")
+
+        self.StatusText = tk.StringVar()
+        label_state = tk.Label(status_box, textvariable=self.StatusText)
+        label_state.pack(side="left", pady="5")
+
+    def create_verification(self, owner):
+        bid = owner[0]
+
+        termin_data = dba.get_huehner_date_from_newest_impfdate(bid)
+
+        if termin_data:
+
+            filename = fdialog.asksaveasfilename(filetypes=[('PDF Dokumente', '*.pdf'), ('Alle Dateien', '*')])
+
+            name = owner[1] + " " + owner[2]
+
+            address = owner[5] + " " + owner[6] + ", " + owner[3] + " " + owner[4]
+            try:
+                pdf.create_official_pdf(filename, name, termin_data[0],
+                                        datetime.strftime(termin_data[1], "%d.%m.%Y"), address)
+                self.B_createVer.config(state="disabled")
+                self.StatusText.set(
+                    "Offizieles Dokument für den neuesten Termin von Besitzernummer" + str(bid) + " erstellt!")
+                self.search(self.E_nname.get(), self.E_plz.get())
+            except Exception as e:
+                self.StatusText.set(
+                    "Ein Fehler ist aufgetreten: " + str(e))
+        else:
+            self.B_createVer.config(state="disabled")
+            self.B_createOwnerVer.config(state="disabled")
+            self.StatusText.set("Dieser Besitzer hatte noch keinen Impftermin!")
+
+    def create_owner_version(self, owner):
+        bid = owner[0]
+
+        date = dba.get_newest_impfdate(bid)
+
+        if date:
+
+            filename = fdialog.asksaveasfilename(filetypes=[('PDF Dokumente', '*.pdf'), ('Alle Dateien', '*')])
+
+            name = owner[1] + " " + owner[2]
+
+            # NEEDS TO BE CHANGED WHEN CLOUD SERVICE IS CREATED
+            qr.make_qr_url(name + " " + datetime.strftime(date[0], "%d.%m.%Y"))
+
+            try:
+                pdf.create_owner_pdf(filename, name, datetime.strftime(date[0], "%d.%m.%Y"))
+
+                self.B_createOwnerVer.config(state="disabled")
+                self.StatusText.set("Besitzer Dokument für den neuesten Termin von Besitzernummer" +
+                                    str(bid) + " erstellt!")
+                self.search(self.E_nname.get(), self.E_plz.get())
+            except Exception as e:
+                self.StatusText.set(
+                    "Ein Fehler ist aufgetreten: " + str(e))
+
+        else:
+            self.B_createVer.config(state="disabled")
+            self.B_createOwnerVer.config(state="disabled")
+            self.StatusText.set("Dieser Besitzer hatte noch keinen Impftermin!")
+
+    def search(self, nachname: str, plz: str):
+        nachname = nachname.replace(" ", "")
+        plz = plz.replace(" ", "")
+
+        self.Owners = dba.search(nachname, plz)
+
+        if not self.Owners:
+            self.confirmBox.pack_forget()
+            self.confirmLabelBox.pack_forget()
+            self.L_confirmTitle.pack_forget()
+            self.confirmOwnersBox.pack_forget()
+            self.B_ConfirmButton.pack_forget()
+            self.confirmButtonBox.pack_forget()
+
+            for RadiobuttonBox in self.RadiobuttonBoxList:
+                RadiobuttonBox.pack_forget()
+
+            for Radiobutton in self.RadiobuttonList:
+                Radiobutton.pack_forget()
+            self.SearchStatusText.set(
+                "Es ist ein Fehler aufgetreten! Bitte prüfe deine Eingabe und versuche es nochmal")
+        else:
+            self.SearchStatusText.set("Got: " + str(self.Owners))
+
+            if len(self.Owners) > 1:
+                self.isDistinct = False
+            if len(self.Owners) == 1:
+                self.isDistinct = True
+            if self.isDistinct is not None:
+                self.isSearch = True
+
+            if not self.isDistinct:
+                self.confirmBox.pack_forget()
+                self.confirmLabelBox.pack_forget()
+                self.L_confirmTitle.pack_forget()
+                self.confirmOwnersBox.pack_forget()
+                self.B_ConfirmButton.pack_forget()
+                self.confirmButtonBox.pack_forget()
+
+                self.L_confirmTitle.config(text=str(len(self.Owners)) + " Besitzer gefunden:")
+
+                self.confirmBox.pack(side="top", fill="x", padx="5", pady="5")
+                self.confirmLabelBox.pack(side="top", fill="x", pady="5")
+                self.L_confirmTitle.pack(side="left", padx="5")
+                self.confirmOwnersBox.pack(side="top", fill="x", pady="5")
+
+                for RadiobuttonBox in self.RadiobuttonBoxList:
+                    RadiobuttonBox.pack_forget()
+
+                for Radiobutton in self.RadiobuttonList:
+                    Radiobutton.pack_forget()
+
+                self.RadiobuttonBoxList = []
+                self.RadiobuttonList = []
+                self.choosenOwner = tk.IntVar()
+                self.choosenOwner.set(0)
+
+                i = 0
+                for Owner in self.Owners:
+                    self.RadiobuttonBoxList.append(tk.Frame(master=self.confirmOwnersBox))
+                    self.RadiobuttonList.append(tk.Radiobutton(master=self.RadiobuttonBoxList[i], text=str(Owner),
+                                                               variable=self.choosenOwner,
+                                                               value=i))
+                    self.RadiobuttonBoxList[i].pack(side="top", fill="x", pady="5")
+                    self.RadiobuttonList[i].pack(side="left", padx="5")
+                    i += 1
+
+                self.B_ConfirmButton.configure(command=lambda: self.confirm(self.Owners[self.choosenOwner.get()]))
+                self.confirmButtonBox.pack(side="top", fill="x", pady="5")
+                self.B_ConfirmButton.pack(side="left", padx="5")
+            else:
+                self.confirm(self.Owners[0])
+                self.confirmBox.pack_forget()
+                self.confirmLabelBox.pack_forget()
+                self.L_confirmTitle.pack_forget()
+                self.confirmOwnersBox.pack_forget()
+                self.B_ConfirmButton.pack_forget()
+                self.confirmButtonBox.pack_forget()
+                for RadiobuttonBox in self.RadiobuttonBoxList:
+                    RadiobuttonBox.pack_forget()
+
+                for Radiobutton in self.RadiobuttonList:
+                    Radiobutton.pack_forget()
+
+    def confirm(self, owner):
+        self.Owner = owner
+        self.isConfirm = True
+        self.B_createVer.config(state="normal")
+        self.B_createOwnerVer.config(state="normal")
+        self.OwnerLabelText.set(str(self.Owner[1]) + " " + str(self.Owner[2]) + ": " +
+                                str(self.Owner[3]) + " " + str(self.Owner[4]) + " " + str(self.Owner[5]) + " " +
+                                str(self.Owner[6]) + " - " + str(self.Owner[7]))
+
+    def show(self):
+        self.lift()
+        root.title("Hühnerliste - Besitzer löschen")
+
+
 # Content Frame with Menu
 class MainView(tk.Frame):
     def __init__(self, *args, **kwargs):
@@ -2331,6 +2485,7 @@ class MainView(tk.Frame):
         page_delete_owner = PageDeleteOwner(self)
         page_alter_owner = PageAlterOwner(self)
         page_alter_date = PageAlterDate(self)
+        page_print_pdf = PagePrintPDF(self)
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -2344,6 +2499,7 @@ class MainView(tk.Frame):
         page_delete_owner.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         page_alter_owner.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         page_alter_date.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        page_print_pdf.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
         # Menu for changing pages
         menu = tk.Menu(root)
@@ -2377,6 +2533,9 @@ class MainView(tk.Frame):
         pagemenu.add_separator()
 
         pagemenu.add_command(label="Zahlung bearbeiten", command=page_confirm.show)
+        pagemenu.add_separator()
+
+        pagemenu.add_command(label="PDFs", command=page_print_pdf.show)
 
         page_view_print.show()
 

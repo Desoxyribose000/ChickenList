@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Autor: Max Nowak
-# Version: 0.3 wip
+# Version: 0.4 wip - PDF Generation
 # Programm for Manipulation of ChickenList DB
 # main Database Access
 
@@ -132,6 +132,46 @@ def print_all(fname):
     return 1
 
 
+# searches db for owners matching provided data
+def search(nachname, plz):
+    cur.execute("""SELECT BID,vorname,nachname,plz,ortsname,strassenname,hausnummer, tel FROM besitzer
+                    WHERE nachname = %s AND plz = %s ORDER BY nachname,vorname;""", [nachname, plz])
+    connection.commit()
+    owners = cur.fetchall()
+
+    return owners
+
+
+# gets all info about owner from db
+def refresh():
+    cur.execute("""SELECT * FROM besitzer ORDER BY nachname,vorname;""")
+    connection.commit()
+
+    owners = cur.fetchall()
+
+    return owners
+
+
+# enquires for all data in dates
+def print_termin(bid):
+    cur.execute("""Select * FROM impftermin
+                            JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
+                            WHERE bi.BID = %s
+                            ORDER BY datum,anzahlhuehner;""", [bid])
+    connection.commit()
+
+    termine = cur.fetchall()
+
+    return termine
+
+
+# inserts a connection between an owner a date
+def commit_termine(bid, iid):
+    cur.execute("""INSERT INTO besitzer_impftermin (BID, IID)
+                            VALUES (%s,%s);""", [bid, iid])
+    connection.commit()
+
+
 # add a new Owner to DB
 # all arguments have to be given, if unknown vname or tel: give None
 def add_owner_return_bid(nname: str, plz: str, ortsname: str, strassenname: str, hausnummer: str, vname: str = None,
@@ -179,12 +219,44 @@ def add_owner_return_bid(nname: str, plz: str, ortsname: str, strassenname: str,
         return cur.fetchone()
 
 
+# adds a date to db and returns iid for further usage
 def add_termin_return_iid(datum: datetime, huehner: int, bezahlt: bool):
     cur.execute("""INSERT INTO impftermin (datum, anzahlhuehner, bezahlt)
                     VALUES (%s, %s, %s) RETURNING impftermin.IID;""", [datum, huehner, bezahlt])
     connection.commit()
     iid = cur.fetchone()
     return iid[0]
+
+
+# deletes a date from db
+def delete_date(iid):
+    cur.execute("""DELETE FROM besitzer_impftermin WHERE iid = %s;""", [iid])
+    connection.commit()
+
+    cur.execute("""DELETE FROM impftermin WHERE iid = %s;""", [iid])
+    connection.commit()
+
+
+# deletes a owner from db for given bid
+def delete_owner(bid):
+    cur.execute("""SELECT impftermin.IID FROM impftermin
+                        JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
+                        JOIN besitzer b on b.BID = bi.BID
+                        WHERE b.BID = %s;""", [bid])
+    connection.commit()
+    iids = cur.fetchall()
+
+    for IID in iids:
+        cur.execute("""DELETE FROM besitzer_impftermin
+                                       WHERE iid = %s;""", [IID])
+        connection.commit()
+        cur.execute("""DELETE FROM impftermin
+                                            WHERE iid = %s;""", [IID])
+        connection.commit()
+
+    cur.execute("""DELETE FROM besitzer
+                                WHERE bid = %s;""", [bid])
+    connection.commit()
 
 
 # alter a existing Owner
@@ -260,6 +332,22 @@ def alter_owner(bid: int, nname: str, plz: str, ortsname: str, strassenname: str
         return -1
 
 
+# updates paiment information for given iid
+def has_paid(iid):
+    cur.execute("""UPDATE impftermin
+                            SET bezahlt = true
+                            WHERE iid = %s;""", [iid])
+    connection.commit()
+
+
+# updates paiment information for given iid
+def has_not_paid(iid):
+    cur.execute("""UPDATE impftermin
+                                    SET bezahlt = false
+                                    WHERE iid = %s;""", [iid])
+    connection.commit()
+
+
 # alter a existing termin
 def alter_termin(iid: int, datum: datetime, huehner: int, bezahlt: bool):
     try:
@@ -274,3 +362,33 @@ def alter_termin(iid: int, datum: datetime, huehner: int, bezahlt: bool):
     except Exception as e:
         print(e)
         return 0
+
+
+# searches for the date of the newest impfdate of a given owner
+def get_newest_impfdate(bid: int):
+    cur.execute("""SELECT datum FROM impftermin
+                            JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
+                            JOIN besitzer b on b.BID = bi.BID
+                            WHERE b.BID = %s and datum = (   SELECT max(datum) FROM impftermin
+                                                            JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
+                                                            JOIN besitzer b on b.BID = bi.BID
+                                                            WHERE b.BID = %s);""", [bid, bid])
+    connection.commit()
+    date = cur.fetchone()
+
+    return date
+
+
+# searches for the date and amount of chicken of the newest impfdate of a given owner
+def get_huehner_date_from_newest_impfdate(bid: int):
+    cur.execute("""SELECT anzahlhuehner, datum FROM impftermin
+                            JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
+                            JOIN besitzer b on b.BID = bi.BID
+                            WHERE b.BID = %s and datum = (   SELECT max(datum) FROM impftermin
+                                                            JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
+                                                            JOIN besitzer b on b.BID = bi.BID
+                                                            WHERE b.BID = %s);""", [bid, bid])
+    connection.commit()
+    termin_data = cur.fetchone()
+
+    return termin_data
