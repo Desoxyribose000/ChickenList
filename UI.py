@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # Autor: Max Nowak
-# Version: 0.4 wip - PDF Generation
+# Version: 0.5 wip - Cloud Access
 # Programm for Manipulation of ChickenList DB
 # GUI Controller
 
@@ -17,7 +17,7 @@ import db_access as dba
 
 import pdf
 
-import qr
+import qr_encrypt
 
 
 # GUI
@@ -2345,19 +2345,21 @@ class PagePrintPDF(Page):
     def create_owner_version(self, owner):
         bid = owner[0]
 
-        date = dba.get_newest_impfdate(bid)
+        termin_data = dba.get_newest_impfdate(bid)
 
-        if date:
+        if termin_data:
 
-            filename = fdialog.asksaveasfilename(filetypes=[('PDF Dokumente', '*.pdf'), ('Alle Dateien', '*')])
+            date = termin_data[0]
+            iid = termin_data[1]
 
             name = owner[1] + " " + owner[2]
 
-            # NEEDS TO BE CHANGED WHEN CLOUD SERVICE IS CREATED
-            qr.make_qr_url(name + " " + datetime.strftime(date[0], "%d.%m.%Y"))
+            filename = fdialog.asksaveasfilename(filetypes=[('PDF Dokumente', '*.pdf'), ('Alle Dateien', '*')])
+
+            qr_encrypt.make_qr_url(owner[2], str(iid))
 
             try:
-                pdf.create_owner_pdf(filename, name, datetime.strftime(date[0], "%d.%m.%Y"))
+                pdf.create_owner_pdf(filename, name, datetime.strftime(date, "%d.%m.%Y"))
 
                 self.B_createOwnerVer.config(state="disabled")
                 self.StatusText.set("Besitzer Dokument für den neuesten Termin von Besitzernummer" +

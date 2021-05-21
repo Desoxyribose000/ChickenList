@@ -374,7 +374,7 @@ def alter_termin(iid: int, datum: datetime, huehner: int, bezahlt: bool):
 
 # searches for the date of the newest impfdate of a given owner
 def get_newest_impfdate(bid: int):
-    cur.execute("""SELECT datum FROM impftermin
+    cur.execute("""SELECT datum, impftermin.iid FROM impftermin
                             JOIN besitzer_impftermin bi on impftermin.IID = bi.IID
                             JOIN besitzer b on b.BID = bi.BID
                             WHERE b.BID = %s and datum = (   SELECT max(datum) FROM impftermin
