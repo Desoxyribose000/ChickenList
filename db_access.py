@@ -267,6 +267,24 @@ def delete_owner(bid):
     connection.commit()
 
 
+# updates paiment information for given iid
+def has_paid(iid):
+    cur.execute("""UPDATE impftermin
+                            SET bezahlt = true
+                            WHERE iid = %s;""", [iid])
+    connection.commit()
+
+
+# updates paiment information for given iid
+def has_not_paid(iid):
+    cur.execute("""UPDATE impftermin
+                                    SET bezahlt = false
+                                    WHERE iid = %s;""", [iid])
+    connection.commit()
+
+
+# BEGIN OOSL ###########################################################################################################
+
 # alter a existing Owner
 # all arguments have to be given, if unknown vname or tel: give None
 def alter_owner(bid: int, nname: str, plz: str, ortsname: str, strassenname: str, hausnummer: str, vname: str = None,
@@ -340,22 +358,6 @@ def alter_owner(bid: int, nname: str, plz: str, ortsname: str, strassenname: str
         return -1
 
 
-# updates paiment information for given iid
-def has_paid(iid):
-    cur.execute("""UPDATE impftermin
-                            SET bezahlt = true
-                            WHERE iid = %s;""", [iid])
-    connection.commit()
-
-
-# updates paiment information for given iid
-def has_not_paid(iid):
-    cur.execute("""UPDATE impftermin
-                                    SET bezahlt = false
-                                    WHERE iid = %s;""", [iid])
-    connection.commit()
-
-
 # alter a existing termin
 def alter_termin(iid: int, datum: datetime, huehner: int, bezahlt: bool):
     try:
@@ -400,3 +402,5 @@ def get_huehner_date_from_newest_impfdate(bid: int):
     termin_data = cur.fetchone()
 
     return termin_data
+
+# END OOSL ###########################################################################################################

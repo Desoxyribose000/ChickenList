@@ -1550,10 +1550,14 @@ class PageDeleteOwner(Page):
         root.title("Hühnerliste - Besitzer löschen")
 
 
+# BEGIN OOSL ###########################################################################################################
+
 # Page alter Owner - user can alter a owner
 class PageAlterOwner(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
+
+        # Create GUI ELEMENTS
 
         self.isSearch = False
         self.isConfirm = False
@@ -2304,7 +2308,7 @@ class PagePrintPDF(Page):
         self.B_createVer.pack(side="left")
 
         self.B_createOwnerVer = tk.Button(create_ver_button_box, text="Besitzer Version erstellen!",
-                                     command=(lambda: self.create_owner_version(self.Owner)))
+                                          command=(lambda: self.create_owner_version(self.Owner)))
         self.B_createOwnerVer.config(state="disabled")
         self.B_createOwnerVer.pack(side="left", padx="5")
 
@@ -2471,6 +2475,8 @@ class PagePrintPDF(Page):
         self.lift()
         root.title("Hühnerliste - Besitzer löschen")
 
+
+# END OOSL #############################################################################################################
 
 # Content Frame with Menu
 class MainView(tk.Frame):

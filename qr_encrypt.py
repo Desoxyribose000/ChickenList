@@ -46,5 +46,3 @@ def make_qr_url(last_name, iid):
     img = code.make_image()
 
     img.save("qrcode.png")
-
-
