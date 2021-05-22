@@ -22,11 +22,12 @@ Dazu habe ich das ändern der Daten vom Besitzer und der Impftermine eingeführt
 Die entsprechenden neuen Klassen sind Mit OOSL gekennzeichnet, um sie von den bereits bestehenden abzuheben.
 
 3. Erweitern um Extrafunktionen:
+4. 
 Die erste Extrafunktion die Ich eigeführt habe, war die Funktion PDFs erstellen lassen zu können.
 	Dazu gibt es 2 Versionen, die erste für das Amt, welches benötigt wird, wenn ein Impfstatus nachgewiesen werden muss.
 	Die zweite Version ist eine für den Besitzer, die Ihm die möglichkeit verschafft sich über den Impfstatus zu erkundigen.
 
-Und damit zur zwieten wesentlichen Funtktion: der online Abfrage:
+Die zweite wesentliche Funtktion: online Abfrage:
 
 Das Programm erstellt hierzu einen QR-Code und speichert diesen auf dem PDF ab.
 Dieser scannbare QR-Code enthält eine URL, die auf meine Webseite zeigt. 
