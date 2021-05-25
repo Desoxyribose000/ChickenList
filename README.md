@@ -4,11 +4,7 @@ folgende Umgebungsvariablen gesetzt werden:
 
 
 Pycharm Debug Configuration:
-DBUSER=mainAccess
-DBHOST=chickenlist2.cw6wqybtdspv.us-east-1.rds.amazonaws.com
-DBPASSWD=6M98EPzBt0Ll0jM2
-DBNAME=postgres
-WEBHOST=http://ec2-174-129-186-136.compute-1.amazonaws.com			 nur in ChickenList, nicht in ChickenListCloud
+###########################
 
 Zum Umfang:
 Das Projet umfasste 3 Abschnitte:
